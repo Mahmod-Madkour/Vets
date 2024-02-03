@@ -1,0 +1,149 @@
+<!-- blog/templates/blog/index.html -->
+
+{% extends "base.html" %}
+
+{% block page_content %}
+
+    <div class="container mt-5 mb-5">
+        <div class="row d-flex align-items-center justify-content-center">
+            <div class="col-md-6">
+
+                <!-- Display One Disease -->
+                <div class="card p-2">
+
+                    <!-- User Info For Disease -->
+                    <div class="row p-2 px-3">
+                        <div class="col-11">
+                            {% if user == disease.user %}
+                                <a style="text-decoration: none" href="{% url 'user_profile' %}">
+                                    <span class="font-weight-bold"> {{ disease.user }} </span><br>
+                                </a>
+                            {% else %}
+                                <a style="text-decoration: none" href="{% url 'user_profile_everyone' disease.user.id %}">
+                                    <span class="font-weight-bold"> {{ disease.user }} </span><br>
+                                </a>
+                            {% endif %}
+                            <small>{{ disease.created_on.date }}</small>
+
+                            <!-- Category of Disease -->
+                            <h6> Category Of Disease: 
+                                <a style="text-decoration: none" href="{% url 'category_disease' disease.category.id %}"> {{ disease.category }} </a>
+
+                            </h6>
+                        </div>
+
+                        {% if user == disease.user %}
+                            <!-- Delate Disease -->
+                            <div class="col-1">
+                                <a style="color: black;" href="{% url 'delete_disease' disease.pk %}"> 
+                                    <i class="fa fa-trash " style="font-size:20px"></i>
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Disease Body -->
+                    <div class="row p-2 px-3">
+                        <hr>
+                        <p> {{ disease.body | linebreaks | safe }} </p>
+                        <img src = "/media/{{ disease.photo }}" alt="..." width="50" height="50" class="rounded mb-2 img-thumbnail">
+                        <hr>
+                        <h6> Therapies: {{ counts }} </h6>
+                    </div>
+
+                    <!-- Display All Therapy -->
+                    {% for therapy in therapies %}
+                        <div class="p-2 px-3">
+                            <div class="card">
+                                <div class="p-2 ">
+                                    <div class="row px-2 py-2">
+                                        <!-- Therapy User Created -->
+                                        <div class="col-10">
+                                            {% if user == therapy.user %}
+                                                <a style="text-decoration: none" href="{% url 'user_profile' %}">
+                                                    <span class="font-weight-bold"> {{ therapy.user }} </span>
+                                                </a>
+                                                <small >{{ therapy.created_on.date }}</small>
+                                            {% else %}
+                                                <a style="text-decoration: none" href="{% url 'user_profile_everyone' therapy.user.id %}">
+                                                    <span class="font-weight-bold"> {{ therapy.user }} </span>
+                                                </a>
+                                                <small >{{ therapy.created_on.date }}</small>
+                                            {% endif %}
+                                            
+                                        </div>
+                                        {% if user == therapy.user %}
+                                            <!-- Delate Therapy -->
+                                            <div class="col-2 text-center">
+                                                <button style="border: none; outline: none; background-color: #ffffff;">
+                                                    <a style="color: black;" href="{% url 'delete_therapy' disease.pk therapy.pk %}"> 
+                                                        <i class="fa fa-trash" style="font-size:20px"></i>
+                                                    </a>
+                                                </button>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <!-- Body of Therapy -->
+                                    <div class="row px-2 py-2">
+                                        <p> {{ therapy.body | linebreaks | safe }} </p>
+                                    </div>
+
+                                    <!-- Photo of Therapy -->
+                                    {% if therapy.photo %}
+                                    <div class="row px-2 py-2">
+                                        <img src = "/media/{{ therapy.photo }}" alt="..." width="100" height="100" class="rounded mb-2 img-thumbnail">
+                                    </div>
+                                    {% endif %}
+
+                                    <div class="row px-2 py-2 text-end">
+                                        <a tyle="text-decoration: none" href="{% url 'detail_therapy' disease.pk therapy.pk %}">Replies</a>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+
+                    <!-- Add Therapy -->
+                    <div class="p-2 px-3">
+                        <div class="card">
+                            <div class="p-2">
+                                <div class="row px-2 py-2">
+                                    <form method="post" enctype="multipart/form-data">
+                                        {% csrf_token %}
+
+                                        <h6>Description Of Therapy:</h6>
+                                        <div class="comment-input">
+                                            {{ therapy_form.body }}
+                                        </div><br>
+
+                                        <h6>Photo Of Therapy [Optional]:</h6>
+                                        <div class="comment-input">
+                                            {{ therapy_form.photo }}
+                                        </div><br>
+
+                                        <div class="comment-input">
+                                            <button type="submit" class="btn btn-outline-dark btn-sm btn-block">Therapy</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+                <br>
+
+                
+                    
+                    
+                    
+                    
+                </div>      
+            </div>
+        </div>
+    </div>
+
+{% endblock page_content %}

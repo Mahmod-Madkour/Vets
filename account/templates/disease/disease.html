@@ -1,0 +1,87 @@
+<!-- templates/question/question.html -->
+
+{% extends "base.html" %}
+
+{% block page_content %}
+
+    <div class="container mt-5 mb-5">
+        <div class="row d-flex align-items-center justify-content-center">
+            <div class="col-md-6">
+
+                <!-- Add Disease -->
+                <div class="card">  
+                    <div class="p-2 ">
+                        <div class="row px-3 py-2">
+                            <div class="col-9 " class="comment-input">
+                                <h3>All Diseases</h3>
+                            </div>
+                            <!-- Go To Add Disease Page -->
+                            <div class="col-3" class="comment-input">
+                                <a href="{% url 'add_disease' %}" class="btn btn-outline-dark btn-sm btn-block">Add Disease</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <br>
+
+                <!-- Display All Diseases -->
+                {% for disease in diseases %}
+                    <div class="card p-2">  
+
+                        <!-- User Info For Disease -->
+                        <div class="row p-2 px-3">
+                            <div class="col-11">
+                                {% if user == disease.user %}
+                                    <a style="text-decoration: none" href="{% url 'user_profile' %}">
+                                        <span class="font-weight-bold"> {{ disease.user }} </span><br>
+                                    </a>
+                                {% else %}
+                                    <a style="text-decoration: none" href="{% url 'user_profile_everyone' disease.user.id %}">
+                                        <span class="font-weight-bold"> {{ disease.user }} </span><br>
+                                    </a>
+                                {% endif %}
+                                <small>{{ disease.created_on.date }}</small>
+
+                                <!-- Category of Disease -->
+                                <h6> Category Of Disease: 
+                                    <a style="text-decoration: none" href="{% url 'category_disease' disease.category.id %}"> {{ disease.category }} </a>
+
+                                </h6>
+                            </div>
+
+                            {% if user == disease.user %}
+                                <!-- Delate Disease -->
+                                <div class="col-1">
+                                    <a style="color: black;" href="{% url 'delete_disease' disease.pk %}"> 
+                                        <i class="fa fa-trash " style="font-size:20px"></i>
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Disease Body -->
+                        <div class="row p-2 px-3">
+                            <hr>
+                            <p> {{ disease.body | linebreaks | safe }} </p>
+                            <img src = "/media/{{ disease.photo }}" alt="..." width="50" height="50" class="rounded mb-2 img-thumbnail">
+                            <hr>
+                        </div>
+
+                        <!-- Show Therapy -->
+                        <div class="row px-2">
+                            <div class="col-4"></div>
+                            <div class="col-4">
+                                <a href="{% url 'detail_disease' disease.pk %}" class="btn btn-outline-dark btn-sm btn-block">Show Therapy</a>
+                            </div>
+                            <div class="col-4"></div>
+                        </div>
+                        <br>
+                    </div>
+                    <br>
+                {% endfor %}
+                
+            </div>
+        </div>
+    </div>
+
+{% endblock page_content %}

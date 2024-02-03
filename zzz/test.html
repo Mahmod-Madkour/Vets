@@ -1,0 +1,55 @@
+<!DOCTYPE html> 
+<html lang="en"> 
+  
+<head> 
+    <meta charset="UTF-8"> 
+
+  
+    <title> 
+        Toggle Like/Dislike Button with HTML and CSS 
+    </title> 
+  
+    <!-- Include Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"> 
+  
+    <style> 
+
+  
+        .like-btn i { 
+            font-size: 40px; 
+            cursor: pointer; 
+            color: #af4c4c; 
+            transition: color 0.3s ease; 
+        } 
+  
+        .like-btn.active i {
+            color: #4CAF50;
+        }
+    </style> 
+</head> 
+  
+<body> 
+    <div class="like-btn" onclick="toggleLike()"> 
+        <i class="fas fa-thumbs-up"></i> 
+    </div> 
+  
+    <script> 
+        let likeBtn = document.querySelector('.like-btn'); 
+  
+        function toggleLike() { 
+            likeBtn.classList.toggle('active'); 
+  
+            // Toggle Font Awesome class for the  
+            // thumbs-up and thumbs-down icons 
+            if (likeBtn.classList.contains('active')) { 
+                likeBtn.innerHTML =  
+                    '<i class="fas fa-thumbs-up"></i>'; 
+            } else { 
+                likeBtn.innerHTML =  
+                    '<i class="fas fa-thumbs-up"></i>'; 
+            } 
+        } 
+    </script> 
+</body> 
+  
+</html>

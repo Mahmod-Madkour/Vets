@@ -1,0 +1,42 @@
+{% extends "base_auth.html" %}
+
+{% block page_content %}
+
+    <div class="login-container">
+        <form method="post" action="{% url 'register' %}" enctype="multipart/form-data" class="login-form">
+            {% csrf_token %}
+            <h1>Welcome</h1>
+            <p>Please create a new account</p>
+            <div class="input-group">
+                {{ profile_form.first_name }}
+            </div>
+            <div class="input-group">
+                {{ profile_form.last_name }}
+            </div>
+            <div class="input-group">
+                {{ user_form.username }}
+            </div>
+            <div class="input-group">
+                {{ user_form.email }}
+            </div>
+            <div class="input-group">
+                {{ profile_form.about }}
+            </div>
+            <div class="input-group">
+                {{ user_form.password1 }}
+            </div>
+            <div class="input-group">
+                {{ user_form.password2 }}
+            </div>
+            
+            <button type="submit">Sign Up</button>
+
+            <div class="bottom-text">
+            <p>Already have an account <a href="{% url 'login' %}">Sign In</a></p>
+            </div>
+        </form>
+    </div>
+
+{% endblock page_content %}
+
+

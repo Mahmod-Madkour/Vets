@@ -1,0 +1,28 @@
+<!-- post/templates/delete_post.html -->
+
+{% extends "base.html" %}
+
+{% block page_content %}
+
+    <div class="container mt-5 mb-5">
+        <div class="row d-flex align-items-center justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="p-2 px-3">
+                        <!-- User Info For Replay -->
+                        <p class="text-justify text-center"> Are You Sure Delete Replay Of Therapy</p>
+                        <!-- Delete Replay -->
+                        <form method="post">
+                            {% csrf_token %}
+                            <div class="text-center" class="comment-input">
+                                <button type="submit" class="form-control"> Delete</button>
+                            </div>
+                        </form>   
+                    </div>
+                </div>
+                <br>  
+            </div>
+        </div>
+    </div>
+
+{% endblock page_content %}

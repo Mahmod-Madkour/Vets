@@ -1,0 +1,7 @@
+.like-icon {
+    cursor: pointer;
+}
+
+.like-icon.clicked i {
+    color: blue;
+}

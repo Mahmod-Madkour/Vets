@@ -1,0 +1,161 @@
+<!-- blog/templates/blog/index.html -->
+
+{% extends "base.html" %}
+
+{% block page_content %}
+
+    <div class="container mt-5 mb-5">
+        <div class="row d-flex align-items-center justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+
+                    <!-- Display One Question -->
+                    <div class="p-2 ">
+                        <div class="row px-3 py-2">
+                            <!-- Title of Question & Question User Created -->
+                            <div class="col-10">
+                                <h5> {{ question.title }} </h5>
+                                {% if user == question.user %}
+                                    <a style="text-decoration: none" href="{% url 'user_profile' %}">
+                                        <span class="font-weight-bold"> {{ question.user }} </span>
+                                    </a>
+                                    <small >{{ question.created_on.date }}</small>
+                                {% else %}
+                                    <a style="text-decoration: none" href="{% url 'user_profile_everyone' question.user.id %}">
+                                        <span class="font-weight-bold"> {{ question.user }} </span>
+                                    </a>
+                                    <small >{{ question.created_on.date }}</small>
+                                {% endif %}
+                            </div>
+
+                            {% if user == question.user %}
+                                <!-- Edit Question -->
+                                <div class="col-1 text-center">
+                                    <button style="border: none; outline: none; background-color: #ffffff;">
+                                        <a style="color: black;" href="{% url 'update_question' question.id %}"> 
+                                            <i class="fa fa-edit" style="font-size:20px"></i>
+                                        </a>
+                                    </button>
+                                </div>
+                                
+                                <!-- Delate Question -->
+                                <div class="col-1 text-center">
+                                    <button style="border: none; outline: none; background-color: #ffffff;">
+                                        <a style="color: black;" href="{% url 'delete_question' question.id %}">
+                                            <i class="fa fa-trash" style="font-size:20px"></i>
+                                        </a>
+                                    </button>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="row px-3 py-2">
+                            <!-- Body of Question & Number of Answers -->
+                            <div class="col-11">
+                                <p> {{ question.body | linebreaks | safe }} </p>
+                                <h6> Answers: {{ counts }} </h6>
+                            </div>
+
+                            <!-- Votes To Question & Numbrer of Votes -->
+                            <div class="col-1 text-center">
+                                <!-- Vote Of Question -->
+                                <form method="post">
+                                    {% csrf_token %}
+                                    <button type="submit" style="border: none; outline: none; background-color: #ffffff;">
+                                        <i class="fa fa-star" style="font-size:20px"></i>
+
+                                        <!-- Numbrer of Votes -->
+                                        <h6> {{ question.question_votes_count }} </h6>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Display All Answers -->
+                    {% for answer in answers %}
+                        <div class="p-2 px-3">
+                            <div class="card">
+                                <div class="p-2 ">
+                                    <div class="row px-2 py-2">
+                                        <!-- Answer User Created -->
+                                        <div class="col-11">
+                                            {% if user == answer.user %}
+                                                <a style="text-decoration: none" href="{% url 'user_profile' %}">
+                                                    <span class="font-weight-bold"> {{ answer.user }} </span>
+                                                </a>
+                                                <small >{{ answer.created_on.date }}</small>
+                                            {% else %}
+                                                <a style="text-decoration: none" href="{% url 'user_profile_everyone' answer.user.id %}">
+                                                    <span class="font-weight-bold"> {{ answer.user }} </span>
+                                                </a>
+                                                <small >{{ answer.created_on.date }}</small>
+                                            {% endif %}
+                                            
+                                        </div>
+                                        {% if user == answer.user %}
+                                            <!-- Delate Answer -->
+                                            <div class="col-1 text-center">
+                                                <button style="border: none; outline: none; background-color: #ffffff;">
+                                                    <a style="color: black;" href="{% url 'delete_answer' question.id answer.id %}"> 
+                                                        <i class="fa fa-trash" style="font-size:20px"></i>
+                                                    </a>
+                                                </button>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="row px-2 py-2">
+                                        <!-- Body of Answer -->
+                                        <div class="col-11">
+                                            <p> {{ answer.body | linebreaks | safe }} </p>
+                                        </div>
+
+                                        <!-- Votes To Answer & Numbrer of Votes -->
+                                        <div class="col-1">
+                                            <!-- Vote Of Answer -->
+                                            <form action="{% url 'vote_answer' question.id answer.id %}" method="post">
+                                            <form method="post">
+                                                {% csrf_token %}
+                                                <button type="submit" style="border: none; outline: none; background-color: #ffffff;">
+                                                    <i class="fa fa-star" style="font-size:20px"></i>
+
+                                                    <!-- Numbrer of Votes -->
+                                                    <h6> {{ answer.answer_votes_count }} </h6>
+                                                </button>
+                                            </form>
+
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    
+                    <!-- Add Answer -->
+                    <div class="p-2 px-3">
+                        <div class="card">
+                            <div class="p-2">
+                                <div class="row px-2 py-2">
+                                    <h6>Your answer:</h6>
+                                    <form method="post">
+                                        {% csrf_token %}
+                                        <div class="comment-input">
+                                            {{ answer_form.body }}
+                                        </div><br>
+                                        <div class="comment-input">
+                                            <button type="submit" class="btn btn-outline-dark btn-sm btn-block">Answer</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>      
+            </div>
+        </div>
+    </div>
+
+{% endblock page_content %}

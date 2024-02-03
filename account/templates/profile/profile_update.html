@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block page_content %}
+
+    <div class="container mt-5 mb-5">
+        <div class="row d-flex align-items-center justify-content-center">
+            <div class="col-md-6">
+                <div class="card"> 
+
+                    <div class="px-4 py-4">
+                        <div class="row">
+                            <div class="col-4">
+                                {% if profile.photo %}
+                                    <img src = "/media/{{ profile.photo }}" alt="..." width="200" height="200" class="rounded mb-2 img-thumbnail">
+                                {% else %}
+                                    <img src = "/media/profile/Profile-default.png" alt="..." width="130" class="rounded mb-2 img-thumbnail">
+                                {% endif %}
+                            </div>
+                            <div class="col-8">
+                                <h4> Dr. {{ profile.first_name }} {{ profile.last_name }} </h4>
+                                <p> {{ user.username }} </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form method="post" enctype="multipart/form-data" class="bg-white shadow rounded overflow-hidden">
+                        {% csrf_token %}
+                        <div class="px-4 py-3">
+                            <h5 class="mb-0">Change Photo</h5>
+                            <br>
+                            <div lass="mb-0" >
+                                {{ form.photo }}
+                            </div>
+                        </div>
+        
+                        <div class="px-4 py-3">
+                            <h5 class="mb-0">About</h5><br>
+                            <div lass="mb-0" >
+                                {{ form.about }}
+                            </div>
+                        </div>
+        
+                        <div class="px-4 py-3">
+                            <h5 class="mb-0">First Name</h5><br>
+                            <div lass="mb-0" >
+                                {{ form.first_name }}
+                            </div>
+                        </div>
+        
+                        <div class="px-4 py-3">
+                            <h5 class="mb-0">Last Name</h5><br>
+                            <div lass="mb-0" >
+                                {{ form.last_name }}
+                            </div>
+                        </div>
+        
+                        <div class="px-4 py-3">
+                            <h5 class="mb-0">Change Password</h5><br>
+                            <a href="{% url 'update_password' %}" class="btn btn-outline-dark btn-sm btn-block">Change Password</a>
+                        </div>
+                        
+                        <div class="px-4 py-3">
+                            <input type="submit" value="Save Changes" class="btn btn-outline-dark btn-sm btn-block">
+                        </div>
+                    </form>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    
+{% endblock page_content %}

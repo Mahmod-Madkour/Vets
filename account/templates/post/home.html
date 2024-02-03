@@ -1,0 +1,107 @@
+<!-- post/templates/home.html -->
+
+{% extends "base.html" %}
+
+{% block page_content %}
+
+    <div class="container mt-5 mb-5">
+        <div class="row d-flex align-items-center justify-content-center">
+            <div class="col-md-6">
+                <!-- Create Post -->
+                <div class="card">  
+                    <div class="p-2 ">
+                        <div class="row px-3 py-2">
+                            <div class="col-9 " class="comment-input">
+                                <h3>All Posts</h3>
+                            </div>
+                            <!-- Go To Ask Question Page -->
+                            <div class="col-3" class="comment-input">
+                                <a href="{% url 'create_post' %}" class="btn btn-outline-dark btn-sm btn-block">New Post</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <br>
+
+                <!-- Display All Post -->
+                {% for post in posts %}  
+                    <div class="card p-2">
+
+
+                        <!-- User Info For Post -->
+                        <div class="row p-2 px-3">
+                            <div class="col-10">
+                                {% if user == post.user %}
+                                    <a style="text-decoration: none" href="{% url 'user_profile' %}">
+                                        <span class="font-weight-bold"> {{ post.user }} </span><br>
+                                    </a>
+                                {% else %}
+                                    <a style="text-decoration: none" href="{% url 'user_profile_everyone' post.user.id %}">
+                                        <span class="font-weight-bold"> {{ post.user }} </span><br>
+                                    </a>
+                                {% endif %}
+                                <small >{{ post.created_on.date }}</small>
+                            </div>
+
+                            {% if user == post.user %}
+                                <!-- Update Post -->
+                                <div class="col-1">
+                                    <a style="color: black;" href="{% url 'update_post' post.pk %}">
+                                        <i class="fa fa-edit " style="font-size:20px"></i>
+                                    </a>
+                                </div>
+                                <!-- Delate Post -->
+                                <div class="col-1">
+                                    <a style="color: black;" href="{% url 'delete_post' post.pk %}"> 
+                                        <i class="fa fa-trash " style="font-size:20px"></i>
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Post Body -->
+                        <div class="px-3">
+                            <p> {{ post.body | linebreaks | safe }} </p>
+                            <hr>
+                            <div class="d-flex justify-content-between align-items-center">
+
+                                <!-- Like Of Post -->
+                                <form action="{% url 'like_post' post.id %}" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit">
+                                        {% if user in post.like_set.all %}
+                                            <i style="color: blue;" class="fas fa-thumbs-up"></i>
+                                        {% else %}
+                                            <i class="fas fa-thumbs-up"></i>
+                                        {% endif %}
+                                    </button>
+                                </form>
+
+                                <div>
+                                    <!-- Number Of Post Likes -->
+                                    <p> {{ post.post_likes_count }} Likes . 
+                                    <span>
+                                        <!-- Link To Show All Comments For Post Selected -->
+                                        <a style="text-decoration: none" href="{% url 'post_detail' post.pk %}">
+                                            <!-- Numbers of Comments -->
+                                            {% for key, value in post_comments_count.items %}
+                                            {% if key == post.id %}
+                                                <small> {{ value }} Comments</small><br>
+                                            {% endif %}
+                                            {% endfor %}
+                                        </a>
+                                    </span>
+                                    </p>
+                                </div>
+                                
+                            </div>
+                        </div>
+
+                    </div>
+                    <br>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+{% endblock page_content %}

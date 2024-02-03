@@ -1,0 +1,51 @@
+<!-- templates/question/ask_question.html -->
+
+{% extends "base.html" %}
+
+{% block page_content %}
+
+    <div class="container mt-5 mb-5">
+        <div class="row d-flex align-items-center justify-content-center">
+            <div class="col-md-6">
+                <!-- Add New Disease -->
+                <div class="card">
+
+                    <div class="p-2 ">
+                        <div class="row px-3 py-2">
+                            <h3 style="text-align:center;">Add New Disease</h3>
+                        </div>
+                    </div>
+
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="p-2 px-3">
+                            
+                            <h6>Type Of Disease</h6>
+                            <div>
+                                {{ disease_form.category }}
+                            </div><br>
+
+                            <h6>Description</h6>
+                            <div>
+                                {{ disease_form.body }}
+                            </div><br>
+
+                            <h6>Disease Photo</h6>
+                            <div type="file" name="photo">
+                                {{ disease_form.photo }}
+                            </div><br>
+
+                            <div>
+                                <button type="submit" class="btn btn-outline-dark btn-sm btn-block">Add Disease </button>
+                            </div><br>
+                        </div>
+                    </form>
+
+                </div>
+                <br>
+                
+            </div>
+        </div>
+    </div>
+
+{% endblock page_content %}

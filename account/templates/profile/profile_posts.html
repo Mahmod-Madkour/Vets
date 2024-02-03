@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block page_content %}
+
+    <div class="container mt-5 mb-5">
+        <div class="row d-flex align-items-center justify-content-center">
+            <div class="col-md-6">
+                <div class="card"> 
+
+                    <div class="px-4 py-4">
+                        <div class="row">
+                            <div class="col-4">
+                                {% if profile.photo %}
+                                    <img src = "/media/{{ profile.photo }}" alt="..." width="200" height="200" class="rounded mb-2 img-thumbnail">
+                                {% else %}
+                                    <img src = "/media/profile/Profile-default.png" alt="..." width="200" height="200" class="rounded mb-2 img-thumbnail">
+                                {% endif %}
+                            </div>
+                            <div class="col-8">
+                                <h4> Dr. {{ profile.first_name }} {{ profile.last_name }} </h4>
+                                <p> {{ user.username }} </p>
+                            </div>
+                        </div>
+                        <div class="row px-3">
+                            <a href="{% url 'profile_update' %}" class="btn btn-outline-dark btn-sm btn-block">Edit profile</a>
+                        </div>
+                    </div>
+
+                    <div class="px-4 py-4">
+                        <h5>About</h5>
+                        <div>
+                            <p> {{ profile.about  | linebreaks | safe }} </p>
+                        </div>
+                    </div>
+                    <div class="py-4 px-4">
+                        <a href="{% url 'logout' %}" class="btn btn-outline-dark btn-sm btn-block" >Logout</a>
+                    </div>
+
+                    <div class="py-4 px-4">
+                        <div class="card py-2 px-4">
+                            <nav>
+                                <ul class="nav justify-content-center">
+                                    <!-- Home -->
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{% url 'profile_posts' %}"><i class="fas fa-home"></i> Home</a>
+                                    </li>
+                                    <!-- Questions -->
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{% url 'profile_questions' %}"><i class="fas fa-question"></i> Questions</a>
+                                    </li>
+                                    <!-- Diseases -->
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{% url 'profile_diseases' %}"><i class="fas fa-disease"></i> Diseases</a>
+                                    </li>
+                                    <!-- Profile -->
+                                </ul>
+                            </nav>
+                            <br>
+
+                            <!-- Display All Post -->
+                            {% if found == 1 %}  
+                                {% for post in posts %}  
+                                <div class="card p-2">
+
+                                    <!-- User Info For Post -->
+                                    <div class="row p-2 px-3">
+                                        <div class="col-10">
+                                            {% if user == post.user %}
+                                                <a style="text-decoration: none" href="{% url 'user_profile' %}">
+                                                    <span class="font-weight-bold"> {{ post.user }} </span><br>
+                                                </a>
+                                            {% else %}
+                                                <a style="text-decoration: none" href="{% url 'user_profile_everyone' post.user.id %}">
+                                                    <span class="font-weight-bold"> {{ post.user }} </span><br>
+                                                </a>
+                                            {% endif %}
+                                            <small >{{ post.created_on.date }}</small>
+                                        </div>
+
+                                        {% if user == post.user %}
+                                            <!-- Update Post -->
+                                            <div class="col-1">
+                                                <a style="color: black;" href="{% url 'update_post' post.pk %}">
+                                                    <i class="fa fa-edit " style="font-size:20px"></i>
+                                                </a>
+                                            </div>
+                                            <!-- Delate Post -->
+                                            <div class="col-1">
+                                                <a style="color: black;" href="{% url 'delete_post' post.pk %}"> 
+                                                    <i class="fa fa-trash " style="font-size:20px"></i>
+                                                </a>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <!-- Post Body -->
+                                    <div class="px-3">
+                                        <p> {{ post.body | linebreaks | safe }} </p>
+                                        <hr>
+                                        <div class="d-flex justify-content-between align-items-center">
+
+                                            <!-- Like Of Post -->
+                                            <form action="{% url 'like_post' post.id %}" method="post">
+                                                {% csrf_token %}
+                                                <button type="submit">
+                                                    {% if user in post.like_set.all %}
+                                                        <i style="color: blue;" class="fas fa-thumbs-up"></i>
+                                                    {% else %}
+                                                        <i class="fas fa-thumbs-up"></i>
+                                                    {% endif %}
+                                                </button>
+                                            </form>
+
+                                            <div>
+                                                <!-- Number Of Post Likes -->
+                                                <p> {{ post.post_likes_count }} Likes . 
+                                                <span>
+                                                    <!-- Link To Show All Comments For Post Selected -->
+                                                    <a style="text-decoration: none" href="{% url 'post_detail' post.pk %}">
+                                                        <!-- Numbers of Comments -->
+                                                        {% for key, value in post_comments_count.items %}
+                                                        {% if key == post.id %}
+                                                            <small> {{ value }} Comments</small><br>
+                                                        {% endif %}
+                                                        {% endfor %}
+                                                    </a>
+                                                </span>
+                                                </p>
+                                            </div>
+                                            
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <br>
+                                {% endfor %}
+                            {% elif found == 0 %}
+                                <div class="card p-2">
+                                    <div class="row p-2 px-3">
+                                        <h6> {{ profile.first_name }} {{ profile.last_name }} don't have any posts ! </h6>
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    
+{% endblock page_content %}

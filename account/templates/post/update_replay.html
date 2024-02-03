@@ -1,0 +1,31 @@
+<!-- post/templates/update_replay.html -->
+
+{% extends "base.html" %}
+
+{% block page_content %}
+
+    <div class="container mt-5 mb-5">
+        <div class="row d-flex align-items-center justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <!-- User Info For Replay -->
+                    <div class="d-flex flex-column p-2 px-3">
+                        <span class="font-weight-bold"> {{ replay.user.username }} {{ user.lname }} </span>
+                        <small >{{ replay.created_on.date }}</small>
+                    </div>
+                    <!-- Update Replay -->
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="p-2">
+                            {{ update_form.body }}
+                            <br>
+                            <button type="submit" class="form-control">Edit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock page_content %}
+

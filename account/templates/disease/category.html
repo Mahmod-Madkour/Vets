@@ -1,0 +1,87 @@
+<!-- blog/templates/blog/index.html -->
+
+{% extends "base.html" %}
+
+{% block page_content %}
+
+    <div class="container mt-5 mb-5">
+        <div class="row d-flex align-items-center justify-content-center">
+            <div class="col-md-6">
+                <div class="card">  
+                    <div class="p-2 ">
+                        <!-- Display Status Title of Question  -->
+                        <div class="row px-3 py-2 text-center">
+                            
+                            {% for disease in diseases|slice:":1" %}
+                                <h3>All {{ disease.category }} </span> </h3>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <br>
+
+                <!-- Display All Diseases Are Same Category -->
+                {% for disease in diseases %}
+                <div class="card p-2">  
+
+                    <!-- User Info For Disease -->
+                    <div class="row p-2 px-3">
+                        <div class="col-10">
+                            {% if user == disease.user %}
+                                <a style="text-decoration: none" href="{% url 'user_profile' %}">
+                                    <span class="font-weight-bold"> {{ disease.user }} </span><br>
+                                </a>
+                            {% else %}
+                                <a style="text-decoration: none" href="{% url 'user_profile_everyone' disease.user.id %}">
+                                    <span class="font-weight-bold"> {{ disease.user }} </span><br>
+                                </a>
+                            {% endif %}
+                            <small>{{ disease.created_on.date }}</small>
+
+                            <!-- Category of Disease -->
+                            <h6> Category Of Disease: {{ disease.category }} </h6>
+                        </div>
+
+                        {% if user == disease.user %}
+                            <!-- Update Disease -->
+                            <div class="col-1">
+                                <a style="color: black;" href="#">
+                                    <i class="fa fa-edit " style="font-size:20px"></i>
+                                </a>
+                            </div>
+                            <!-- Delate Disease -->
+                            <div class="col-1">
+                                <a style="color: black;" href="#"> 
+                                    <i class="fa fa-trash " style="font-size:20px"></i>
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+
+
+                    <!-- Disease Body -->
+                    <div class="row p-2 px-3">
+                        <hr>
+                        <p> {{ disease.body | linebreaks | safe }} </p>
+
+                        <img src = "/media/{{ disease.photo }}" alt="..." width="50" height="50" class="rounded mb-2 img-thumbnail">
+                        <hr>
+                    </div>
+
+                    <!-- Show Therapy -->
+                    <div class="row px-2">
+                        <div class="col-2"></div>
+                        <div class="col-8">
+                            <a href="#" class="btn btn-outline-dark btn-sm btn-block">Show Therapy</a>
+                        </div>
+                        <div class="col-2"></div>
+                    </div>
+                </div>
+                <br>
+            {% endfor %}
+                
+            </div>
+        </div>
+    </div>
+
+{% endblock page_content %}

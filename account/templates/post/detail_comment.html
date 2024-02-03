@@ -1,0 +1,139 @@
+<!-- post/templates/replay.html -->
+
+{% extends "base.html" %}
+
+{% block page_content %}
+
+    <div class="container mt-5 mb-5">
+        <div class="row d-flex align-items-center justify-content-center">
+            <div class="col-md-6">
+
+                <div class="card">
+                    <!-- User Info For Post -->
+                    <div class="d-flex flex-column p-2 px-3">
+                        {% if user == post.user %}
+                            <a style="text-decoration: none" href="{% url 'user_profile' %}">
+                                <span class="font-weight-bold"> {{ post.user }} </span>
+                            </a>
+                            <small >{{ post.created_on.date }}</small>
+                        {% else %}
+                            <a style="text-decoration: none" href="{% url 'user_profile_everyone' post.user.id %}">
+                                <span class="font-weight-bold"> {{ post.user }} </span>
+                            </a>
+                            <small >{{ post.created_on.date }}</small>
+                        {% endif %}
+                    </div>
+                    <!-- Post Body -->
+                    <div class="p-2 px-3">
+                        <p class="text-justify"> {{ post.body | linebreaks | safe }} </p>
+                        <hr>
+                        <!-- Dispaly Comment Selected And All Replies For Comment -->
+                        <p>Comment :</p>
+                        <div class="card">
+                            <!-- User Info For Comment -->
+                            <div class="d-flex flex-column p-2 px-3">
+                                <span class="font-weight-bold"> {{ comment.user.username }} {{ user.lname }} </span>
+                                <small > {{ comment.created_on.date }} </small>
+                            </div>
+                            <div class="px-3">
+                                <!-- Comment Body -->
+                                <p class="text-justify"> {{ comment.body | linebreaks | safe }} </p>
+                                <!-- Craete Replay -->
+                                <div class="comments">
+                                    <div class="row">
+                                        <form method="post">
+                                            {% csrf_token %}
+                                            <div class="row">
+                                                <div class="col-9" class="comment-input">
+                                                    {{ replay_form.body }}
+                                                </div>
+                                                <div class="col-3" class="comment-input">
+                                                    <button type="submit" class="form-control">Replay</button>
+                                                </div>
+                                            </div>
+                                        </form>
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Dispaly All Replies -->
+                            <div class="row">
+                                <div class="col-2"></div>
+                                <div class="col-9 p-2">
+                                    <p>Replies : {{ counts }}</p>
+                                    {% for replay in replies %}
+                                        <div class="card ">
+                                            <div class="row">
+                                                <!-- User Info For Replay -->
+                                                <div class="col-9">
+                                                    <div class="d-flex flex-column p-2 px-3">
+                                                        <span class="font-weight-bold"> {{ replay.user.username }} {{ user.lname }} </span>
+                                                        <small >{{ replay.created_on.date }}</small>
+                                                    </div>
+                                                </div>
+
+                                                {% if user == replay.user %}
+                                                    <!-- Update Replay -->
+                                                    <div class="col-1">
+                                                        <div class="d-flex flex-column p-2">
+                                                            <a style="color: black;" href="{% url 'update_replay' post.pk comment.pk replay.id %}">
+                                                                <i class="fa fa-edit " style="font-size:20px"></i>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                    <!-- Delate Replay -->
+                                                    <div class="col-1">
+                                                        <div class="d-flex flex-column p-2">
+                                                            <a style="color: black;" href="{% url 'delete_replay' post.pk comment.pk replay.id %}"> 
+                                                                <i class="fa fa-trash " style="font-size:20px"></i>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                    {% endif %}
+                                            </div>
+
+                                            <!-- Replay Body -->
+                                            <div class="px-3">
+                                                <p class="text-justify"> {{ replay.body | linebreaks | safe }} </p>
+                                                <hr>
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <!-- Like Of Replay -->
+                                                    <form action="{% url 'like_replay' post.id comment.id replay.id %}" method="post">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="btn
+                                                            {% if user in replay.like_set.all %}
+                                                                btn-success
+                                                            {% else %}
+                                                                btn-outline-success
+                                                            {% endif %}">
+
+                                                            {% if user in replay.like_set.all %}Unlike
+                                                            {% else %}Like
+                                                            {% endif %}
+                                                        </button>
+                                                    </form>
+
+                                                    <div>
+                                                        <!-- Number Of Replay Likes -->
+                                                        <p> {{ replay.replay_likes_count }} Likes </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <br>
+                                        </div>
+                                        <br>
+                                    {% endfor %}
+                                </div>
+                                <div class="col-1"></div>
+                            </div>
+                        </div>
+                        <br>
+                    </div>
+                </div>
+                <br>  
+            </div>
+        </div>
+    </div>
+
+{% endblock page_content %}

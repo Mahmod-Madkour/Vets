@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block page_content %}
+
+    <div class="container mt-5 mb-5">
+        <div class="row d-flex align-items-center justify-content-center">
+            <div class="col-md-6">
+                <div class="card"> 
+
+                    <div class="px-4 py-4">
+                        <div class="row">
+                            <div class="col-4">
+                                {% if profile.photo %}
+                                    <img src = "/media/{{ profile.photo }}" alt="..." width="200" height="200" class="rounded mb-2 img-thumbnail">
+                                {% else %}
+                                    <img src = "/media/profile/Profile-default.png" alt="..." width="200" height="200" class="rounded mb-2 img-thumbnail">
+                                {% endif %}
+                            </div>
+                            <div class="col-8">
+                                <h4> Dr. {{ profile.first_name }} {{ profile.last_name }} </h4>
+                                <p> {{ user.username }} </p>
+                            </div>
+                        </div>
+                        <div class="row px-3">
+                            <a href="{% url 'profile_update' %}" class="btn btn-outline-dark btn-sm btn-block">Edit profile</a>
+                        </div>
+                    </div>
+
+                    <div class="px-4 py-4">
+                        <h5>About</h5>
+                        <div>
+                            <p> {{ profile.about  | linebreaks | safe }} </p>
+                        </div>
+                    </div>
+                    <div class="py-4 px-4">
+                        <a href="{% url 'logout' %}" class="btn btn-outline-dark btn-sm btn-block" >Logout</a>
+                    </div>
+
+                    <div class="py-4 px-4">
+                        <div class="card py-2 px-4">
+                            <nav>
+                                <ul class="nav justify-content-center">
+                                    <!-- Home -->
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{% url 'profile_posts' %}"><i class="fas fa-home"></i> Home</a>
+                                    </li>
+                                    <!-- Questions -->
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{% url 'profile_questions' %}"><i class="fas fa-question"></i> Questions</a>
+                                    </li>
+                                    <!-- Diseases -->
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{% url 'profile_diseases' %}"><i class="fas fa-disease"></i> Diseases</a>
+                                    </li>
+                                    <!-- Profile -->
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    
+{% endblock page_content %}

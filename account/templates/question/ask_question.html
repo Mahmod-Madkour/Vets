@@ -1,0 +1,43 @@
+<!-- templates/question/ask_question.html -->
+
+{% extends "base.html" %}
+
+{% block page_content %}
+
+    <div class="container mt-5 mb-5">
+        <div class="row d-flex align-items-center justify-content-center">
+            <div class="col-md-6">
+                <!-- Ask Question -->
+                <div class="card">
+
+                    <div class="p-2 ">
+                        <div class="row px-3 py-2">
+                            <h3 style="text-align:center;">Ask Question</h3>
+                        </div>
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="p-2 px-3">
+                            <h6>Title Of Question</h6>
+                            <div class="comment-input">
+                                {{ question_form.title }}
+                            </div><br>
+                            <h6>Question</h6>
+                            <div class="comment-input">
+                                {{ question_form.body }}
+                            </div><br>
+                            <div class="comment-input">
+                                <button type="submit" class="btn btn-outline-dark btn-sm btn-block">Ask</button>
+                            </div><br>
+                        </div>
+                    </form>
+
+                </div>
+                <br>
+                
+            </div>
+        </div>
+    </div>
+
+{% endblock page_content %}

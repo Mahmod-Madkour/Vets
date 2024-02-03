@@ -1,0 +1,73 @@
+<!-- blog/templates/blog/index.html -->
+
+{% extends "base.html" %}
+
+{% block page_content %}
+
+    <div class="container mt-5 mb-5">
+        <div class="row d-flex align-items-center justify-content-center">
+            <div class="col-md-6">
+                <div class="card">  
+                    <div class="p-2 ">
+                        <!-- Display Status Title of Question  -->
+                        <div class="row px-3 py-2 text-center">
+                            
+                            {% for question in questions|slice:":1" %}
+                                {% if question.status.id == 2  %}
+                                    <h3>All Questions Are <span style="color:red;"> {{ question.status }} </span> </h3>
+                                {% elif question.status.id == 3 %}
+                                    <h3>All Questions Are <span style="color:green;"> {{ question.status }} </span> </h3>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <br>
+
+                <!-- Display All Questions Are Same Status -->
+                {% for question in questions %}
+                    <div class="card  p-2">
+
+                        <!-- Info For One Question -->
+                        <div class="row  px-2">
+                            <div class="col-4">
+                                <!-- Numbers of Question Votes -->
+                                <small> {{ question.question_votes_count }} votes</small><br>
+
+                                <!-- Numbers of Question Answers -->
+                                {% for key, value in question_answers_count.items %}
+                                    {% if key == question.id %}
+                                        <small> {{ value }} answers</small><br>
+                                    {% endif %}
+                                {% endfor %}
+
+                                <!-- Status of Question -->
+                                <small>
+                                    <a style="text-decoration:none" href="{% url 'status_question' question.status.id %}">
+                                        {{ question.status }}
+                                    </a>
+                                </small>
+                            </div>
+
+                            <div class="col-8">
+                                <!-- Title of Question -->
+                                <h5>
+                                    <a style="text-decoration:none" href="{% url 'detail_question' question.pk %}">
+                                        {{ question.title }}
+                                    </a>
+                                </h5>
+
+                                <!-- Question User Created -->
+                                <span class="font-weight-bold" style="color:blue;"> {{ question.user.username }} {{ question.user.lname }} </span>
+                                <small >{{ question.created_on.date }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    <br>
+                {% endfor %}
+                
+            </div>
+        </div>
+    </div>
+
+{% endblock page_content %}

@@ -1,0 +1,30 @@
+<!-- post/templates/update_comment.html -->
+
+{% extends "base.html" %}
+
+{% block page_content %}
+
+    <div class="container mt-5 mb-5">
+        <div class="row d-flex align-items-center justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <!-- User Info For Comment -->
+                    <div class="d-flex flex-column p-2 px-3">
+                        <span class="font-weight-bold"> {{ comment.user.username }} {{ user.lname }} </span>
+                        <small >{{ comment.created_on.date }}</small>
+                    </div>
+                    <!-- Update Comment -->
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="p-2">
+                            {{ update_form.body }}
+                            <br>
+                            <button type="submit" class="form-control">Edit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock page_content %}

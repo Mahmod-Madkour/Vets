@@ -1,0 +1,83 @@
+<!-- templates/question/question.html -->
+
+{% extends "base.html" %}
+
+{% block page_content %}
+
+    <div class="container mt-5 mb-5">
+        <div class="row d-flex align-items-center justify-content-center">
+            <div class="col-md-6">
+
+                <!-- Ask Question -->
+                <div class="card">  
+                    <div class="p-2 ">
+                        <div class="row px-3 py-2">
+                            <div class="col-9 " class="comment-input">
+                                <h3>All Questions</h3>
+                            </div>
+                            <!-- Go To Ask Question Page -->
+                            <div class="col-3" class="comment-input">
+                                <a href="{% url 'ask_question' %}" class="btn btn-outline-dark btn-sm btn-block">Ask Question</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <br>
+
+                <!-- Display All Questions -->
+                {% for question in questions %}
+                    <div class="card p-2">  
+
+                        <!-- Info For One Question -->
+                        <div class="row px-2">
+                            <div class="col-4">
+                                <!-- Numbers of Question Votes -->
+                                <small> {{ question.question_votes_count }} votes</small><br>
+
+                                <!-- Numbers of Question Answers -->
+                                {% for key, value in question_answers_count.items %}
+                                    {% if key == question.id %}
+                                        <small> {{ value }} answers</small><br>
+                                    {% endif %}
+                                {% endfor %}
+
+                                <!-- Status of Question -->
+                                <small>
+                                    <a style="text-decoration:none" href="{% url 'status_question' question.status.id %}">
+                                        {{ question.status }}
+                                    </a>
+                                </small>
+                            </div>
+
+                            <div class="col-8">
+                                <!-- Title of Question -->
+                                <h5>
+                                    <a style="text-decoration:none" href="{% url 'detail_question' question.pk %}">
+                                        {{ question.title }}
+                                    </a>
+                                </h5>
+                                
+                                <!-- Question User Created -->
+                                {% if user == question.user %}
+                                    <a style="text-decoration: none" href="{% url 'user_profile' %}">
+                                        <span class="font-weight-bold"> {{ question.user }} </span>
+                                    </a>
+                                    <small > {{ question.created_on.date }} </small>
+                                {% else %}
+                                    <a style="text-decoration: none" href="{% url 'user_profile_everyone' question.user.id %}">
+                                        <span class="font-weight-bold"> {{ question.user }} </span>
+                                    </a>
+                                    <small > {{ question.created_on.date }} </small>
+                                {% endif %}
+                                
+                            </div>
+                        </div>
+                    </div>
+                    <br>
+                {% endfor %}
+                
+            </div>
+        </div>
+    </div>
+
+{% endblock page_content %}
