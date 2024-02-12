@@ -13,9 +13,9 @@
                         <div class="row px-3 py-2 text-center">
                             
                             {% for question in questions|slice:":1" %}
-                                {% if question.status.id == 2  %}
+                                {% if question.status == 'Not Answered'  %}
                                     <h3>All Questions Are <span style="color:red;"> {{ question.status }} </span> </h3>
-                                {% elif question.status.id == 3 %}
+                                {% elif question.status == 'Answered' %}
                                     <h3>All Questions Are <span style="color:green;"> {{ question.status }} </span> </h3>
                                 {% endif %}
                             {% endfor %}
@@ -43,7 +43,7 @@
 
                                 <!-- Status of Question -->
                                 <small>
-                                    <a style="text-decoration:none" href="{% url 'status_question' question.status.id %}">
+                                    <a style="text-decoration:none" href="{% url 'status_question' question.status %}">
                                         {{ question.status }}
                                     </a>
                                 </small>
@@ -58,8 +58,18 @@
                                 </h5>
 
                                 <!-- Question User Created -->
-                                <span class="font-weight-bold" style="color:blue;"> {{ question.user.username }} {{ question.user.lname }} </span>
-                                <small >{{ question.created_on.date }}</small>
+                                <!-- Question User Created -->
+                                {% if user == question.user %}
+                                    <a style="text-decoration: none" href="{% url 'user_profile' %}">
+                                        <span class="font-weight-bold"> {{ question.user }} </span>
+                                    </a>
+                                    <small > {{ question.created_on.date }} </small>
+                                {% else %}
+                                    <a style="text-decoration: none" href="{% url 'user_profile_everyone' question.user.id %}">
+                                        <span class="font-weight-bold"> {{ question.user }} </span>
+                                    </a>
+                                    <small > {{ question.created_on.date }} </small>
+                                {% endif %}
                             </div>
                         </div>
                     </div>

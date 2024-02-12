@@ -10,19 +10,35 @@
 
                 <div class="card">
                     <!-- User Info For Disease -->
-                    <div class="d-flex flex-column p-2 px-3">
+                    <div class="row p-2 px-3">
+                        <div class="col-11">
+                            {% if user == disease.user %}
+                                <a style="text-decoration: none" href="{% url 'user_profile' %}">
+                                    <span class="font-weight-bold"> {{ disease.user.first_name }} {{ disease.user.last_name }} </span><br>
+                                </a>
+                            {% else %}
+                                <a style="text-decoration: none" href="{% url 'user_profile_everyone' disease.user.id %}">
+                                    <span class="font-weight-bold"> {{ disease.user }} </span><br>
+                                </a>
+                            {% endif %}
+                            <small>{{ disease.created_on.date }}</small>
+
+                            <!-- Category of Disease -->
+                            <h6> Category Of Disease: 
+                                <a style="text-decoration: none" href="{% url 'category_disease' disease.category %}"> {{ disease.category }} </a>
+                            </h6>
+                        </div>
+
                         {% if user == disease.user %}
-                            <a style="text-decoration: none" href="{% url 'user_profile' %}">
-                                <span class="font-weight-bold"> {{ disease.user }} </span>
-                            </a>
-                            <small >{{ disease.created_on.date }}</small>
-                        {% else %}
-                            <a style="text-decoration: none" href="{% url 'user_profile_everyone' disease.user.id %}">
-                                <span class="font-weight-bold"> {{ disease.user }} </span>
-                            </a>
-                            <small >{{ disease.created_on.date }}</small>
+                            <!-- Delate Disease -->
+                            <div class="col-1">
+                                <a style="color: black;" href="{% url 'delete_disease' disease.pk %}"> 
+                                    <i class="fa fa-trash " style="font-size:20px"></i>
+                                </a>
+                            </div>
                         {% endif %}
                     </div>
+
                     <!-- Disease Body -->
                     <div class="p-2 px-3">
                         <div class="row px-2">
@@ -34,7 +50,7 @@
 
                         <!-- Dispaly Therapy Selected And All Replies For Therapy -->
                         <div class="p-2 px-3">
-                            <p>Therapy :</p>
+                            <h6>Therapy :</h6>
                             <div class="card">
                                 <div class="p-2 ">
                                     <div class="row px-2 py-2">
@@ -42,16 +58,17 @@
                                         <div class="col-10">
                                             {% if user == therapy.user %}
                                                 <a style="text-decoration: none" href="{% url 'user_profile' %}">
-                                                    <span class="font-weight-bold"> {{ therapy.user }} </span>
+                                                    <span class="font-weight-bold"> {{ therapy.user.first_name }} {{ therapy.user.last_name }} </span>
                                                 </a>
-                                                <small >{{ therapy.created_on.date }}</small>
                                             {% else %}
                                                 <a style="text-decoration: none" href="{% url 'user_profile_everyone' therapy.user.id %}">
-                                                    <span class="font-weight-bold"> {{ therapy.user }} </span>
+                                                    <span class="font-weight-bold"> {{ therapy.user.first_name }} {{ therapy.user.last_name }} </span>
                                                 </a>
-                                                <small >{{ therapy.created_on.date }}</small>
                                             {% endif %}
+                                            <br>
+                                            <small >{{ therapy.created_on.date }}</small>
                                         </div>
+
                                         {% if user == therapy.user %}
                                             <!-- Delate Therapy -->
                                             <div class="col-2 text-center">
@@ -96,10 +113,19 @@
                                             {% for replay in replies %}
                                                 <div class="card ">
                                                     <div class="row">
-                                                        <!-- User Info For Replay -->
-                                                        <div class="col-9">
+
+                                                        <!-- Therapy User Created -->
+                                                        <div class="col-10">
                                                             <div class="d-flex flex-column p-2 px-3">
-                                                                <span class="font-weight-bold"> {{ replay.user.username }} </span>
+                                                                {% if user == therapy.user %}
+                                                                    <a style="text-decoration: none" href="{% url 'user_profile' %}">
+                                                                        <span class="font-weight-bold"> {{ replay.user.first_name }} {{ replay.user.last_name }} </span>
+                                                                    </a>
+                                                                {% else %}
+                                                                    <a style="text-decoration: none" href="{% url 'user_profile_everyone' replay.user.id %}">
+                                                                        <span class="font-weight-bold"> {{ replay.user.first_name }} {{ replay.user.last_name }} </span>
+                                                                    </a>
+                                                                {% endif %}
                                                                 <small >{{ replay.created_on.date }}</small>
                                                             </div>
                                                         </div>
@@ -132,7 +158,6 @@
                             </div>
                         </div>
 
-                            
                         </div>
                         <br>
                     </div>

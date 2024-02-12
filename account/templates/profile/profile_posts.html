@@ -10,11 +10,7 @@
                     <div class="px-4 py-4">
                         <div class="row">
                             <div class="col-4">
-                                {% if profile.photo %}
-                                    <img src = "/media/{{ profile.photo }}" alt="..." width="200" height="200" class="rounded mb-2 img-thumbnail">
-                                {% else %}
-                                    <img src = "/media/profile/Profile-default.png" alt="..." width="200" height="200" class="rounded mb-2 img-thumbnail">
-                                {% endif %}
+                                <img src="{{ request.user.profile.photo.url }}" alt="..." width="200" height="200" class="rounded mb-2 img-thumbnail">
                             </div>
                             <div class="col-8">
                                 <h4> Dr. {{ profile.first_name }} {{ profile.last_name }} </h4>
@@ -58,7 +54,7 @@
                             <br>
 
                             <!-- Display All Post -->
-                            {% if found == 1 %}  
+                            {% if found == 1 %}
                                 {% for post in posts %}  
                                 <div class="card p-2">
 
@@ -67,11 +63,11 @@
                                         <div class="col-10">
                                             {% if user == post.user %}
                                                 <a style="text-decoration: none" href="{% url 'user_profile' %}">
-                                                    <span class="font-weight-bold"> {{ post.user }} </span><br>
+                                                    <span class="font-weight-bold"> {{ post.user.first_name }} {{ post.user.last_name }} </span><br>
                                                 </a>
                                             {% else %}
                                                 <a style="text-decoration: none" href="{% url 'user_profile_everyone' post.user.id %}">
-                                                    <span class="font-weight-bold"> {{ post.user }} </span><br>
+                                                    <span class="font-weight-bold"> {{ post.user.first_name }} {{ post.user.last_name }} </span><br>
                                                 </a>
                                             {% endif %}
                                             <small >{{ post.created_on.date }}</small>

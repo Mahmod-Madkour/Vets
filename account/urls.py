@@ -78,7 +78,7 @@ urlpatterns = [
     path("questions/", views.question_home, name="question_home"),
 
     # All Questions Same Status
-    path("status/<pk_status>/", views.status_question, name="status_question"),
+    path("status/<status>/", views.status_question, name="status_question"),
 
     # Ask Question
     path("ask/", views.ask_question, name="ask_question"),
@@ -104,7 +104,7 @@ urlpatterns = [
     path("diseases/", views.disease_home, name="disease_home"),
 
     # All Questions Same Status
-    path("category/<pk_category>/", views.category_disease, name="category_disease"),
+    path("category/<category>/", views.category_disease, name="category_disease"),
     
     # Add Disease
     path("add/", views.add_disease, name="add_disease"),

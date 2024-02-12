@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        function ShowAndHide() {
+            var x = document.getElementById('SectionName');
+            if (x.style.display == 'none'){
+                x.style.display = 'block';
+            }
+            else{
+                x.style.display = 'none';
+            }
+        }
+    </script>
+
+    <button onclick="ShowAndHide()"> New Post </button>
+
+    <div id="SectionName" style="display:none;" class="row px-3 py-2">
+        Text to be shown and hidden
+    </div>
+</body>
+</html>

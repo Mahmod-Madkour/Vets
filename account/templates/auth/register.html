@@ -8,25 +8,22 @@
             <h1>Welcome</h1>
             <p>Please create a new account</p>
             <div class="input-group">
-                {{ profile_form.first_name }}
+                {{ form.username }}
             </div>
             <div class="input-group">
-                {{ profile_form.last_name }}
+                {{ form.email }}
             </div>
             <div class="input-group">
-                {{ user_form.username }}
+                {{ form.first_name }}
             </div>
             <div class="input-group">
-                {{ user_form.email }}
+                {{ form.last_name }}
             </div>
             <div class="input-group">
-                {{ profile_form.about }}
+                {{ form.password1 }}
             </div>
             <div class="input-group">
-                {{ user_form.password1 }}
-            </div>
-            <div class="input-group">
-                {{ user_form.password2 }}
+                {{ form.password2 }}
             </div>
             
             <button type="submit">Sign Up</button>

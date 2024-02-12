@@ -6,66 +6,58 @@ from django.contrib import messages
 from django.urls import reverse
 from django.contrib.auth.decorators import  login_required
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
-from .forms import LoginForm, RegisterForm, UserProfileForm, ProfileEditForm, UpdatePasswordForm, PostForm, CommentForm, ReplayForm, UpdateForm, QuestionForm, AnswerForm, UpdateQuestionForm, DiseaseForm, TherapyForm
-from .models import User, Profile, Post, PostLikes, Comment, CommentLikes, Replay, ReplayLikes, Question, QuestionVotes, Answer, AnswerVotes, Status, Disease, Category, Therapy, ReplayTherapy
-
+from .forms import *
+from .models import *
 
 ####################################################################################################
 ####################################################################################################
 # Sign Up
 def sign_up(request):
-    if request.method == 'GET':
-        user_form = RegisterForm()
-        profile_form = UserProfileForm()
+    if request.user.is_authenticated:
+        return redirect('post_home')
+    else:
+        form = RegisterForm()
+        
+        if request.method == 'POST':
+            form = RegisterForm(request.POST)
+            if form.is_valid():
+                user = form.save(commit=False)
+                user.username = user.username.lower()
+                user.save()
+                
+                # Create Profile account for new user
+                Profile.objects.create(user=user, first_name=user.first_name, last_name=user.last_name)                
+                return redirect('login')
         context = {
-            'user_form': user_form,
-            'profile_form': profile_form
+            'form': form,
         }
         return render(request, 'auth/register.html', context)
-    
-    if request.method == 'POST':
-        user_form = RegisterForm(request.POST)
-        profile_form = UserProfileForm(request.POST, request.FILES)
-        
-        if user_form.is_valid() and profile_form.is_valid():
-            user = user_form.save(commit=False)
-            user.username = user.username.lower()
-            user.save()
-            
-            profile = profile_form.save(commit=False)
-            profile.user = user
-            profile.save()
-            
-            login(request, user)
-            return redirect('login')
-        else:
-            context = {
-            'user_form': user_form,
-            'profile_form': profile_form
-            }
-            return render(request, 'auth/register.html', context)
 
 # Sign In
 def sign_in(request):
-    form = LoginForm()
-
-    if request.method == 'POST':
-        form = LoginForm(request.POST) 
-        if form.is_valid():
-            username = form.cleaned_data['username']
-            password = form.cleaned_data['password']
-            user = authenticate(request, username=username, password=password)
-            if user:
-                login(request, user)
-                return redirect('post_home')
-            else:
-                # If authentication fails or form is invalid, display error message
-                messages.error(request, 'Username or Password is incorrect !')
-        
-    return render(request, 'auth/login.html', {'form': form})
+    if request.user.is_authenticated:
+        return redirect('post_home')
+    else:
+        form = LoginForm()
+        if request.method == 'POST':
+            form = LoginForm(request.POST) 
+            if form.is_valid():
+                username = form.cleaned_data['username']
+                password = form.cleaned_data['password']
+                user = authenticate(request, username=username, password=password)
+                if user:
+                    login(request, user)
+                    return redirect('post_home')
+                else:
+                    # If authentication fails or form is invalid, display error message
+                    messages.error(request, 'Username or Password is incorrect !')
+        context = {
+            'form': form,
+        }
+        return render(request, 'auth/login.html', context)
 
 # Profile
-@login_required
+@login_required(login_url='login')
 def user_profile(request):
     profile = Profile.objects.filter(user= request.user).first()
     context = {
@@ -74,7 +66,7 @@ def user_profile(request):
     return render(request, 'profile/profile.html', context=context)
 
 # Profile For Everyone
-@login_required
+@login_required(login_url='login')
 def user_profile_everyone(request, pk_user):
     profile = Profile.objects.filter(user= pk_user).first()
     context = {
@@ -83,19 +75,21 @@ def user_profile_everyone(request, pk_user):
     return render(request, 'profile/profile_everyone.html', context=context)
 
 # Update Profile
-@login_required
+@login_required(login_url='login')
 def profile_update(request):
     profile = request.user.profile
     form = ProfileEditForm(instance=profile)
-
     if request.method == 'POST':
         form = ProfileEditForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
-            form.save()
+            pro = form.save()
+            pro.save()
+
+            # Update first_name, first_name in User
+            User.objects.filter(username= profile).update(first_name=pro.first_name, last_name=pro.last_name)
             return redirect('user_profile')
         else:
             messages.error(request, 'Please correct the error below.')
-        
     context = {
         'profile': profile,
         'form': form,
@@ -103,11 +97,10 @@ def profile_update(request):
     return render(request, 'profile/profile_update.html', context=context)
 
 # Update Password
-@login_required
+@login_required(login_url='login')
 def update_password(request):
     user = request.user
     password_form = UpdatePasswordForm(user)
-
     if request.method == 'POST':
         password_form = UpdatePasswordForm(user, request.POST)
         if password_form.is_valid():
@@ -117,14 +110,13 @@ def update_password(request):
             return redirect('user_profile')
         else:
             messages.error(request, 'Please correct the error below !')
-
     context = {
         'password_form': password_form,
     }
     return render(request, 'profile/update_password.html', context=context)
 
 # Sign Out
-@login_required
+@login_required(login_url='login')
 def sign_out(request):
     logout(request)
     return redirect('login')
@@ -132,12 +124,12 @@ def sign_out(request):
 ####################################################################################################
 ####################################################################################################
 ### Post Page
+@login_required(login_url='login')
 def post_home(request):
     user = request.user
-
     if request.method == "GET":
         posts = Post.objects.all().order_by("-created_on")
-
+        
         # Calculate the count of comments for each post
         post_comments_count = {}
         for post in posts:
@@ -151,14 +143,15 @@ def post_home(request):
             likes[item.post_id] = item.user_id
 
         context = {
-            'likes': likes,
             'user': user,
             'posts': posts,
+            'likes': likes,
             'post_comments_count': post_comments_count,
         }
         return render(request, "post/home.html", context)
 
 ### Create a New Post
+@login_required(login_url='login')
 def create_post(request):
     post_form = PostForm()
 
@@ -166,18 +159,18 @@ def create_post(request):
         post_form = PostForm(request.POST)
         if post_form.is_valid():
             post = Post(
-                body= post_form.cleaned_data["body"],
                 user= request.user,
+                body= post_form.cleaned_data["body"],
             )
             post.save()
             return redirect('post_home')
-    
     context = {
         "post_form": post_form,
     }
     return render(request, "post/post_create.html", context)
 
 ### Like of Post
+@login_required(login_url='login')
 def like_post(request, pk_post):
     post = Post.objects.filter(pk=pk_post).first()
 
@@ -191,30 +184,10 @@ def like_post(request, pk_post):
         PostLikes.objects.create(user=request.user, post=post)
         post.post_likes_count += 1
     post.save()
-    
     return redirect(reverse('post_home'))
 
-# Ask New Question
-def ask_question(request):
-    question_form = QuestionForm()
-    status = Status.objects.first()
-
-    if request.method == "POST":
-        question_form = QuestionForm(request.POST)
-        if question_form.is_valid():
-            question = Question(
-                title= question_form.cleaned_data["title"],
-                body= question_form.cleaned_data["body"],
-                user= request.user,
-                status= status ,
-            )
-            question.save()
-            return redirect(reverse('question_home'))
-    context = {
-        "question_form": question_form,
-    }
-    return render(request, "question/ask_question.html", context)
 ### Update Post
+@login_required(login_url='login')
 def update_post(request, pk_post):
     post = Post.objects.get(pk=pk_post)
     
@@ -231,6 +204,7 @@ def update_post(request, pk_post):
     return render(request, 'post/update_post.html', context)
 
 ### Delete Post
+@login_required(login_url='login')
 def delete_post(request, pk_post):
     post = Post.objects.filter(pk=pk_post)
 
@@ -243,8 +217,11 @@ def delete_post(request, pk_post):
     
     if request.method == 'GET' and not post:
         return redirect(reverse('post_home'))
-    
+
+####################################################################################################
+
 ### Detail Of Post & Add Comment
+@login_required(login_url='login')
 def post_detail(request, pk_post):
     user = request.user
     post = Post.objects.get(pk=pk_post)
@@ -280,6 +257,7 @@ def post_detail(request, pk_post):
     return render(request, "post/detail_post.html", context)
 
 ### Like of Comment
+@login_required(login_url='login')
 def like_comment(request, pk_post, pk_comment):
     comment = Comment.objects.get(pk=pk_comment)
 
@@ -297,6 +275,7 @@ def like_comment(request, pk_post, pk_comment):
     return redirect(reverse('post_detail', kwargs={'pk_post': pk_post}))
 
 ### Update Comment
+@login_required(login_url='login')
 def update_comment(request, pk_post, pk_comment):
     comment = Comment.objects.get(pk=pk_comment)
     
@@ -313,6 +292,7 @@ def update_comment(request, pk_post, pk_comment):
     return render(request, 'post/update_comment.html', context)
 
 ### Delete Comment
+@login_required(login_url='login')
 def delete_comment(request, pk_post, pk_comment):
     comment = Comment.objects.filter(pk=pk_comment)
 
@@ -325,8 +305,10 @@ def delete_comment(request, pk_post, pk_comment):
 
     if request.method == 'GET' and not comment:
         return redirect(reverse('post_home', kwargs={}))
+####################################################################################################
 
 ### Detail Of Comment & Add Replay
+@login_required(login_url='login')
 def comment_detail(request, pk_post, pk_comment):
     user = request.user
     post = Post.objects.get(pk=pk_post)
@@ -358,6 +340,7 @@ def comment_detail(request, pk_post, pk_comment):
     return render(request, "post/detail_comment.html", context)
 
 ### Like of Replay
+@login_required(login_url='login')
 def like_replay(request, pk_post, pk_comment, pk_replay):
     replay = Replay.objects.get(pk=pk_replay)
 
@@ -375,6 +358,7 @@ def like_replay(request, pk_post, pk_comment, pk_replay):
     return redirect(reverse('comment_detail', kwargs={'pk_post': pk_post, 'pk_comment': pk_comment}))
 
 ### Update Replay
+@login_required(login_url='login')
 def update_replay(request, pk_post, pk_comment, pk_replay):
     replay = Replay.objects.get(pk=pk_replay)
     
@@ -391,6 +375,7 @@ def update_replay(request, pk_post, pk_comment, pk_replay):
     return render(request, 'post/update_replay.html', context)
 
 ### Delete Replay
+@login_required(login_url='login')
 def delete_replay(request, pk_post, pk_comment, pk_replay):
     replay = Replay.objects.filter(pk=pk_replay)
 
@@ -406,6 +391,7 @@ def delete_replay(request, pk_post, pk_comment, pk_replay):
 ####################################################################################################
 ####################################################################################################
 # All Questions
+@login_required(login_url='login')
 def question_home(request):
     questions = Question.objects.all().order_by("-created_on")
     
@@ -422,18 +408,37 @@ def question_home(request):
     return render(request, "question/question.html", context)
 
 # Ask New Question
+@login_required(login_url='login')
 def ask_question(request):
     question_form = QuestionForm()
-    status = Status.objects.first()
 
     if request.method == "POST":
         question_form = QuestionForm(request.POST)
         if question_form.is_valid():
             question = Question(
+                user= request.user,
                 title= question_form.cleaned_data["title"],
                 body= question_form.cleaned_data["body"],
+            )
+            question.save()
+            return redirect(reverse('question_home'))
+    context = {
+        "question_form": question_form,
+    }
+    return render(request, "question/ask_question.html", context)
+
+# Ask New Question
+@login_required(login_url='login')
+def ask_question(request):
+    question_form = QuestionForm()
+
+    if request.method == "POST":
+        question_form = QuestionForm(request.POST)
+        if question_form.is_valid():
+            question = Question(
                 user= request.user,
-                status= status ,
+                title= question_form.cleaned_data["title"],
+                body= question_form.cleaned_data["body"],
             )
             question.save()
             return redirect(reverse('question_home'))
@@ -443,8 +448,8 @@ def ask_question(request):
     return render(request, "question/ask_question.html", context)
 
 # All Questions Same Status
-def status_question(request, pk_status):
-    status = Status.objects.get(pk=pk_status)
+@login_required(login_url='login')
+def status_question(request, status):
     questions = Question.objects.filter(status=status).order_by("-created_on")
 
     # Calculate the count of answers for each question
@@ -461,6 +466,7 @@ def status_question(request, pk_status):
 
 # All Detail of One Question
 # Add New Answer & Vote Question & Display All Answers
+@login_required(login_url='login')
 def detail_question(request, pk_question):
     question = Question.objects.get(pk=pk_question)
     answers = Answer.objects.filter(question=question).order_by("-created_on")
@@ -505,6 +511,7 @@ def detail_question(request, pk_question):
         return HttpResponseRedirect(request.path_info)
 
 ### Update Question
+@login_required(login_url='login')
 def update_question(request, pk_question):
     question = Question.objects.get(pk=pk_question)
 
@@ -523,6 +530,7 @@ def update_question(request, pk_question):
             return redirect(reverse('detail_question', kwargs={'pk_question': pk_question}))
 
 ### Delete Question
+@login_required(login_url='login')
 def delete_question(request, pk_question):
     question = Question.objects.filter(pk=pk_question)
 
@@ -537,6 +545,7 @@ def delete_question(request, pk_question):
         return redirect(reverse('question_home'))
     
 ### Delete Answer
+@login_required(login_url='login')
 def delete_answer(request, pk_question, pk_answer):
     answer = Answer.objects.filter(pk=pk_answer)
 
@@ -551,6 +560,7 @@ def delete_answer(request, pk_question, pk_answer):
         return redirect(reverse('detail_question', kwargs={'pk_question': pk_question }))
 
 # Vote Answer
+@login_required(login_url='login')
 def vote_answer(request, pk_question, pk_answer):
     question = Question.objects.get(pk=pk_question)
     answer = Answer.objects.get(pk=pk_answer)
@@ -570,6 +580,7 @@ def vote_answer(request, pk_question, pk_answer):
 ####################################################################################################
 ####################################################################################################
 # All Diseases
+@login_required(login_url='login')
 def disease_home(request):
     diseases = Disease.objects.all().order_by("-created_on")
 
@@ -579,8 +590,8 @@ def disease_home(request):
     return render(request, "disease/disease.html", context)
 
 # All Diseases Same Category
-def category_disease(request, pk_category):
-    category = Category.objects.filter(pk=pk_category).first()
+@login_required(login_url='login')
+def category_disease(request, category):
     diseases = Disease.objects.filter(category=category).order_by("-created_on")
 
     context = {
@@ -589,6 +600,7 @@ def category_disease(request, pk_category):
     return render(request, "disease/category.html", context)
 
 # Add New Disease
+@login_required(login_url='login')
 def add_disease(request):
     disease_form = DiseaseForm()
 
@@ -608,6 +620,7 @@ def add_disease(request):
 
 # All Detail of One Disease
 # Add New Answer & Vote Question & Display All Therapy
+@login_required(login_url='login')
 def detail_disease(request, pk_disease):
     disease = Disease.objects.get(pk=pk_disease)
     therapies = Therapy.objects.filter(disease=disease).order_by("-created_on")
@@ -636,6 +649,7 @@ def detail_disease(request, pk_disease):
             return HttpResponseRedirect(request.path_info)
 
 ### Delete Question
+@login_required(login_url='login')
 def delete_disease(request, pk_disease):
     disease = Disease.objects.filter(pk=pk_disease)
 
@@ -650,6 +664,7 @@ def delete_disease(request, pk_disease):
         return redirect(reverse('disease_home'))
     
 ### Delete Therapy
+@login_required(login_url='login')
 def delete_therapy(request, pk_disease, pk_therapy):
     therapy = Therapy.objects.filter(pk=pk_therapy)
 
@@ -664,6 +679,7 @@ def delete_therapy(request, pk_disease, pk_therapy):
         return redirect(reverse('detail_disease', kwargs={'pk_disease': pk_disease }))
     
 ### Delete Therapy Repaly
+@login_required(login_url='login')
 def delete_therapy_replay(request, pk_disease, pk_therapy, pk_replay):
     replay = ReplayTherapy.objects.filter(pk=pk_replay)
 
@@ -678,6 +694,7 @@ def delete_therapy_replay(request, pk_disease, pk_therapy, pk_replay):
         return redirect(reverse('detail_therapy', kwargs={'pk_disease': pk_disease, 'pk_therapy': pk_therapy}))
 
 ### Detail Therapy
+@login_required(login_url='login')
 def detail_therapy(request, pk_disease, pk_therapy):
     user = request.user
     disease = Disease.objects.get(pk=pk_disease)
@@ -711,6 +728,7 @@ def detail_therapy(request, pk_disease, pk_therapy):
 ####################################################################################################
 ####################################################################################################
 ### Profile Post Page
+@login_required(login_url='login')
 def profile_posts(request):
     user = request.user
     profile = Profile.objects.filter(user= request.user).first()
@@ -750,6 +768,7 @@ def profile_posts(request):
 
 
 ### Profile Question Page
+@login_required(login_url='login')
 def profile_questions(request):
     user = request.user
     profile = Profile.objects.filter(user= request.user).first()
@@ -779,6 +798,7 @@ def profile_questions(request):
     return render(request, "profile/profile_questions.html", context)
     
 ### Profile Diseases Page
+@login_required(login_url='login')
 def profile_diseases(request):
     user = request.user
     profile = Profile.objects.filter(user= request.user).first()

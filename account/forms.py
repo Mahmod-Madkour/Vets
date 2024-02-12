@@ -3,7 +3,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
-from .models import User, Profile, Post, Question, Disease, Category, Therapy, ReplayTherapy
+from .models import *
 
 ####################################################################################################
 # Login
@@ -14,21 +14,14 @@ class LoginForm(forms.Form):
 # Register
 class RegisterForm(UserCreationForm):
     username = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'Enter your username'}))
+    first_name = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'First Name'}))
+    last_name = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'Last Name'}))
     email = forms.EmailField(widget=forms.EmailInput(attrs={'placeholder': 'Enter your email'}))
     password1 = forms.CharField(widget=forms.PasswordInput(attrs={'placeholder': 'Enter your password'}))
     password2 = forms.CharField(widget=forms.PasswordInput(attrs={'placeholder': 'Confirm your password'}))
     class Meta:
         model = User
-        fields = ['username', 'email', 'password1', 'password2']
-
-# Profile
-class UserProfileForm(forms.ModelForm):
-    first_name = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'First Name'}))
-    last_name = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'Last Name'}))
-    about = forms.CharField(widget=forms.Textarea(attrs={'placeholder': 'About'}))
-    class Meta:
-        model = Profile
-        fields = ['first_name', 'last_name', 'about']
+        fields = ['username', 'first_name', 'last_name', 'email', 'password1', 'password2']
 
 # Updtae Profile
 class ProfileEditForm(forms.ModelForm):

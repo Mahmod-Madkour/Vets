@@ -29,29 +29,25 @@
                         <div class="col-10">
                             {% if user == disease.user %}
                                 <a style="text-decoration: none" href="{% url 'user_profile' %}">
-                                    <span class="font-weight-bold"> {{ disease.user }} </span><br>
+                                    <span class="font-weight-bold"> {{ disease.user.first_name }} {{ disease.user.last_name }} </span><br>
                                 </a>
                             {% else %}
                                 <a style="text-decoration: none" href="{% url 'user_profile_everyone' disease.user.id %}">
-                                    <span class="font-weight-bold"> {{ disease.user }} </span><br>
+                                    <span class="font-weight-bold"> {{ disease.user.first_name }} {{ disease.user.last_name }} </span><br>
                                 </a>
                             {% endif %}
                             <small>{{ disease.created_on.date }}</small>
 
                             <!-- Category of Disease -->
-                            <h6> Category Of Disease: {{ disease.category }} </h6>
+                            <h6> Category Of Disease: 
+                                <a style="text-decoration: none" href="{% url 'category_disease' disease.category %}"> {{ disease.category }} </a>
+                            </h6>
                         </div>
 
                         {% if user == disease.user %}
-                            <!-- Update Disease -->
-                            <div class="col-1">
-                                <a style="color: black;" href="#">
-                                    <i class="fa fa-edit " style="font-size:20px"></i>
-                                </a>
-                            </div>
                             <!-- Delate Disease -->
                             <div class="col-1">
-                                <a style="color: black;" href="#"> 
+                                <a style="color: black;" href="{% url 'delete_disease' disease.pk %}"> 
                                     <i class="fa fa-trash " style="font-size:20px"></i>
                                 </a>
                             </div>

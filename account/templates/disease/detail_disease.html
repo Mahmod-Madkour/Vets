@@ -16,7 +16,7 @@
                         <div class="col-11">
                             {% if user == disease.user %}
                                 <a style="text-decoration: none" href="{% url 'user_profile' %}">
-                                    <span class="font-weight-bold"> {{ disease.user }} </span><br>
+                                    <span class="font-weight-bold"> {{ disease.user.first_name }} {{ disease.user.last_name }} </span><br>
                                 </a>
                             {% else %}
                                 <a style="text-decoration: none" href="{% url 'user_profile_everyone' disease.user.id %}">
@@ -27,8 +27,7 @@
 
                             <!-- Category of Disease -->
                             <h6> Category Of Disease: 
-                                <a style="text-decoration: none" href="{% url 'category_disease' disease.category.id %}"> {{ disease.category }} </a>
-
+                                <a style="text-decoration: none" href="{% url 'category_disease' disease.category %}"> {{ disease.category }} </a>
                             </h6>
                         </div>
 
@@ -61,19 +60,19 @@
                                         <div class="col-10">
                                             {% if user == therapy.user %}
                                                 <a style="text-decoration: none" href="{% url 'user_profile' %}">
-                                                    <span class="font-weight-bold"> {{ therapy.user }} </span>
+                                                    <span class="font-weight-bold"> {{ therapy.user.first_name }} {{ therapy.user.last_name }} </span>
                                                 </a>
-                                                <small >{{ therapy.created_on.date }}</small>
                                             {% else %}
                                                 <a style="text-decoration: none" href="{% url 'user_profile_everyone' therapy.user.id %}">
-                                                    <span class="font-weight-bold"> {{ therapy.user }} </span>
+                                                    <span class="font-weight-bold"> {{ therapy.user.first_name }} {{ therapy.user.last_name }} </span>
                                                 </a>
-                                                <small >{{ therapy.created_on.date }}</small>
                                             {% endif %}
-                                            
+                                            <br>
+                                            <small >{{ therapy.created_on.date }}</small>
                                         </div>
+
+                                        <!-- Delate Therapy -->
                                         {% if user == therapy.user %}
-                                            <!-- Delate Therapy -->
                                             <div class="col-2 text-center">
                                                 <button style="border: none; outline: none; background-color: #ffffff;">
                                                     <a style="color: black;" href="{% url 'delete_therapy' disease.pk therapy.pk %}"> 
@@ -91,9 +90,9 @@
 
                                     <!-- Photo of Therapy -->
                                     {% if therapy.photo %}
-                                    <div class="row px-2 py-2">
-                                        <img src = "/media/{{ therapy.photo }}" alt="..." width="100" height="100" class="rounded mb-2 img-thumbnail">
-                                    </div>
+                                        <div class="row px-2 py-2">
+                                            <img src = "/media/{{ therapy.photo }}" alt="..." width="100" height="100" class="rounded mb-2 img-thumbnail">
+                                        </div>
                                     {% endif %}
 
                                     <div class="row px-2 py-2 text-end">
@@ -132,16 +131,9 @@
                         </div>
                     </div>
 
-
                 </div>
                 <br>
 
-                
-                    
-                    
-                    
-                    
-                </div>      
             </div>
         </div>
     </div>
