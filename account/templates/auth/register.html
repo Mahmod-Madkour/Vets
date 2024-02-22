@@ -7,6 +7,13 @@
             {% csrf_token %}
             <h1>Welcome</h1>
             <p>Please create a new account</p>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <h4 style="text-align: center; color: red;"> {{ message }} </h4><br>
+                {% endfor %}
+            {% endif %}
+
             <div class="input-group">
                 {{ form.username }}
             </div>

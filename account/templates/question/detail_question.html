@@ -53,7 +53,8 @@
                             <!-- Body of Question & Number of Answers -->
                             <div class="col-11">
                                 <p> {{ question.body | linebreaks | safe }} </p>
-                                <h6> Answers: {{ counts }} </h6>
+                                <h6> Answers : {{ question.answer_set.count }} </h6>
+                                <p>{{ votes }}</p>
                             </div>
 
                             <!-- Votes To Question & Numbrer of Votes -->
@@ -61,19 +62,26 @@
                                 <!-- Vote Of Question -->
                                 <form method="post">
                                     {% csrf_token %}
-                                    <button type="submit" style="border: none; outline: none; background-color: #ffffff;">
-                                        <i class="fa fa-star" style="font-size:20px"></i>
-
-                                        <!-- Numbrer of Votes -->
-                                        <h6> {{ question.question_votes_count }} </h6>
-                                    </button>
+                                    {% if question_vote %}
+                                        <button type="submit" style="border: none; outline: none; background-color: #ffffff;">
+                                            <i style="text-decoration: none; color:green; font-size:20px" class="fa fa-star"></i>
+                                            <!-- Numbrer of Votes -->
+                                            <h6> {{ question.question_votes_count }} </h6>
+                                        </button>
+                                    {% else %}
+                                        <button type="submit" style="border: none; outline: none; background-color: #ffffff;">
+                                            <i style="text-decoration: none; color:black; font-size:20px" class="fa fa-star"></i>
+                                            <!-- Numbrer of Votes -->
+                                            <h6> {{ question.question_votes_count }} </h6>
+                                        </button>
+                                    {% endif %}
                                 </form>
                             </div>
                         </div>
                     </div>
                     
                     <!-- Display All Answers -->
-                    {% for answer in answers %}
+                    {% for answer, vote in combined_data.items %}
                         <div class="p-2 px-3">
                             <div class="card">
                                 <div class="p-2 ">
@@ -117,16 +125,21 @@
                                             <form action="{% url 'vote_answer' question.id answer.id %}" method="post">
                                             <form method="post">
                                                 {% csrf_token %}
-                                                <button type="submit" style="border: none; outline: none; background-color: #ffffff;">
-                                                    <i class="fa fa-star" style="font-size:20px"></i>
-
-                                                    <!-- Numbrer of Votes -->
-                                                    <h6> {{ answer.answer_votes_count }} </h6>
-                                                </button>
+                                                {% if vote == "vote" %}
+                                                    <button type="submit" style="border: none; outline: none; background-color: #ffffff;">
+                                                        <i style="text-decoration: none; color:green; font-size:20px" class="fa fa-star"></i>
+                                                        <!-- Numbrer of Votes -->
+                                                        <h6> {{ answer.answer_votes_count }} </h6>
+                                                    </button>
+                                                {% else %}
+                                                    <button type="submit" style="border: none; outline: none; background-color: #ffffff;">
+                                                        <i style="text-decoration: none; color:black; font-size:20px" class="fa fa-star"></i>
+                                                        <!-- Numbrer of Votes -->
+                                                        <h6> {{ answer.answer_votes_count }} </h6>
+                                                    </button>
+                                                {% endif %}
                                             </form>
-
                                         </div>
-
                                     </div>
                                 </div>
                             </div>

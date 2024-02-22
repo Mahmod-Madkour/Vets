@@ -47,7 +47,7 @@
                         <p> {{ disease.body | linebreaks | safe }} </p>
                         <img src = "/media/{{ disease.photo }}" alt="..." width="50" height="50" class="rounded mb-2 img-thumbnail">
                         <hr>
-                        <h6> Therapies: {{ counts }} </h6>
+                        <h6> Therapies : {{ disease.therapy_set.count }} </h6>
                     </div>
 
                     <!-- Display All Therapy -->
@@ -96,9 +96,11 @@
                                     {% endif %}
 
                                     <div class="row px-2 py-2 text-end">
-                                        <a tyle="text-decoration: none" href="{% url 'detail_therapy' disease.pk therapy.pk %}">Replies</a>
+                                        <a style="text-decoration: none" href="{% url 'detail_therapy' disease.pk therapy.pk %}">
+                                            {{ therapy.replaytherapy_set.count }} Replies
+                                        </a>
                                     </div>
-
+                                    
                                 </div>
                             </div>
                         </div>

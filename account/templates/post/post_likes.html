@@ -1,0 +1,52 @@
+<!-- post/templates/home.html -->
+
+{% extends "base.html" %}
+
+{% block page_content %}
+
+    <div class="container mt-5 mb-5">
+        <div class="row d-flex align-items-center justify-content-center">
+            <div class="col-md-6">
+                <!-- User Info For Post -->
+                <div class="card">
+                    <div class="p-2 px-3">
+                        {% if user == post.user %}
+                            <a style="text-decoration: none" href="{% url 'user_profile' %}">
+                                <span class="font-weight-bold"> {{ post.user.first_name }} {{ post.user.last_name }} </span><br>
+                            </a>
+                        {% else %}
+                            <a style="text-decoration: none" href="{% url 'user_profile_everyone' post.user.id %}">
+                                <span class="font-weight-bold"> {{ post.user.first_name }} {{ post.user.last_name }} </span><br>
+                            </a>
+                        {% endif %}
+                        <small > {{ post.created_on.date }} </small>
+                    </div>
+                    <!-- Post Body -->
+                    <div class="px-3">
+                        <p> {{ post.body | linebreaks | safe }} </p>
+                        <hr>
+                        <p>Likes : {{ post.post_likes_count }} </p>
+                        <!-- Display All User Likes -->
+                        {% for like in post_likes %}
+                            <div class="card">
+                                <div class="p-2 px-3">
+                                    {% if user == like.user %}
+                                        <a style="text-decoration: none" href="{% url 'user_profile' %}">
+                                            <span class="font-weight-bold"> {{ like.user.first_name }} {{ like.user.last_name }} </span><br>
+                                        </a>
+                                    {% else %}
+                                        <a style="text-decoration: none" href="{% url 'user_profile_everyone' like.user.id %}">
+                                            <span class="font-weight-bold"> {{ like.user.first_name }} {{ like.user.last_name }} </span><br>
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <br>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock page_content %}

@@ -10,7 +10,9 @@
                 <div class="card">
                     <!-- User Info For Post -->
                     <div class="d-flex flex-column p-2 px-3">
-                        <span class="font-weight-bold"> {{ post.user.username }} {{ user.lname }} </span>
+                        <a style="text-decoration: none" href="{% url 'user_profile' %}">
+                            <span class="font-weight-bold"> {{ post.user.first_name }} {{ post.user.last_name }} </span><br>
+                        </a>
                         <small >{{ post.created_on.date }}</small>
                     </div>
                     <!-- Update Post -->

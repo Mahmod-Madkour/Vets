@@ -7,24 +7,67 @@
     <div class="container mt-5 mb-5">
         <div class="row d-flex align-items-center justify-content-center">
             <div class="col-md-6">
+
                 <!-- Create Post -->
-                <div class="card">  
+                <div id="all_posts" class="card">  
                     <div class="p-2 ">
                         <div class="row px-3 py-2">
                             <div class="col-9 " class="comment-input">
                                 <h3>All Posts</h3>
                             </div>
-                            <!-- Go To Ask Question Page -->
+                            <!-- Go To Create Post Page -->
                             <div class="col-3" class="comment-input">
-                                <a href="{% url 'create_post' %}" class="btn btn-outline-dark btn-sm btn-block">New Post</a>
+                                <button onclick="load_page()" class="btn btn-outline-dark btn-sm btn-block">New Post</button>
                             </div>
                         </div>
                     </div>
                 </div>
                 <br>
 
+                <!-- Add Post -->
+                <div id="new_post" style="display:none;" class="card">
+                    <div class="p-2 ">
+                        <div class="row px-3 py-2">
+                            <h3 style="text-align:center;">Create a New Post</h3>
+                        </div>
+                    </div>
+
+                    <!-- Add Post -->
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="p-2 px-3">
+                            <div class="comment-input">
+                                {{ post_form.body }}
+                            </div><br>
+                            <div class="comment-input">
+                                <button type="submit" class="btn btn-outline-dark btn-sm btn-block">Publish Post</button>
+                            </div><br>
+                            <div class="comment-input">
+                                <button onclick="load_page()" class="btn btn-outline-dark btn-sm btn-block">Cancel</button>
+                            </div><br>
+                        </div>
+                    </form>
+
+                </div><br>
+
+                <script>
+                    function load_page() {
+                      var x = document.getElementById('all_posts');
+                      var y = document.getElementById('new_post');
+                  
+                      if (y.style.display === 'none') {
+                        y.style.display = 'block';
+                        x.style.display = 'none';
+                      }
+                      else {
+                        y.style.display = 'none';
+                        x.style.display = 'block';
+                      }
+                    }
+                </script>
+                
                 <!-- Display All Post -->
-                {% for post in posts %}  
+                {% for post, like in combined_data.items %}  
                     <div class="card p-2">
 
                         <!-- User Info For Post -->
@@ -46,7 +89,7 @@
                                 <!-- Update Post -->
                                 <div class="col-1">
                                     <a style="color: black;" href="{% url 'update_post' post.pk %}">
-                                        <i class="fa fa-edit " style="font-size:20px"></i>
+                                        <i class="fa fa-edit" style="font-size:20px"></i>
                                     </a>
                                 </div>
                                 <!-- Delate Post -->
@@ -63,39 +106,40 @@
                             <p> {{ post.body | linebreaks | safe }} </p>
                             <hr>
                             <div class="d-flex justify-content-between align-items-center">
-
+                                
                                 <!-- Like Of Post -->
                                 <form action="{% url 'like_post' post.id %}" method="post">
                                     {% csrf_token %}
-                                    <button type="submit">
-                                        {% if user in post.like_set.all %}
-                                            <i style="color: blue;" class="fas fa-thumbs-up"></i>
-                                        {% else %}
-                                            <i class="fas fa-thumbs-up"></i>
-                                        {% endif %}
-                                    </button>
+                                    {% if like == 'like' %}
+                                        <button type="submit" style="border: none; background: none;">
+                                            <i style="color: blue; font-size:22px;" class="fas fa-thumbs-up"></i>
+                                        </button>
+                                    {% elif like == 'unlike' %}
+                                        <button type="submit" style="border: none; background: none;">
+                                            <i style="color: black; font-size:22px;" class="fas fa-thumbs-up"></i>
+                                        </button>
+                                    {% endif %}
                                 </form>
 
+                                <!-- Link and Comment -->
                                 <div>
-                                    <!-- Number Of Post Likes -->
-                                    <p> {{ post.post_likes_count }} Likes . 
-                                    <span>
-                                        <!-- Link To Show All Comments For Post Selected -->
-                                        <a style="text-decoration: none" href="{% url 'post_detail' post.pk %}">
-                                            <!-- Numbers of Comments -->
-                                            {% for key, value in post_comments_count.items %}
-                                            {% if key == post.id %}
-                                                <small> {{ value }} Comments</small><br>
-                                            {% endif %}
-                                            {% endfor %}
+                                    <!-- Link To Show All Likes For Post Selected -->
+                                    {% if post.post_likes_count > 0 %}
+                                        <a style="text-decoration: none; color:blue;" href="{% url 'all_likes_post' post.pk %}">
+                                            <small> {{ post.post_likes_count }} Likes</small>
                                         </a>
-                                    </span>
-                                    </p>
+                                    {% else %}
+                                        <small style="color:blue;"> {{ post.post_likes_count }} Likes</small>
+                                    {% endif %}
+                                    <span> . </span>
+
+                                    <!-- Link To Show All Comments For Post Selected -->
+                                    <a style="text-decoration: none; color:blue;" href="{% url 'post_detail' post.pk %}">
+                                        <small> {{ post.comment_set.count }} Comments</small>
+                                    </a>
                                 </div>
-                                
                             </div>
                         </div>
-
                     </div>
                     <br>
                 {% endfor %}

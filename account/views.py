@@ -1,6 +1,6 @@
 ### account/view.py
 
-from django.http import HttpResponseRedirect
+from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.urls import reverse
@@ -28,6 +28,8 @@ def sign_up(request):
                 # Create Profile account for new user
                 Profile.objects.create(user=user, first_name=user.first_name, last_name=user.last_name)                
                 return redirect('login')
+            else:
+                messages.error(request, 'Please correct the error below.')
         context = {
             'form': form,
         }
@@ -126,35 +128,28 @@ def sign_out(request):
 ### Post Page
 @login_required(login_url='login')
 def post_home(request):
-    user = request.user
     if request.method == "GET":
+        user = request.user
         posts = Post.objects.all().order_by("-created_on")
-        
-        # Calculate the count of comments for each post
-        post_comments_count = {}
-        for post in posts:
-            count = Comment.objects.filter(post_id=post.id).count()
-            post_comments_count[post.id] = count
+        likes = PostLikes.objects.filter(user=user)
 
-        # Retrieve data from the database
-        data = PostLikes.objects.all()
-        likes = {}
-        for item in data:
-            likes[item.post_id] = item.user_id
+        # Check User is Like
+        combined_data = {}                  # Assuming posts and likes are lists or querysets
+        for post in posts:                  # Initialize combined_data with 'unlike' for all posts
+            combined_data[post] = 'unlike'
+        for like in likes:                  # Update combined_data based on likes
+            if like.post in combined_data:
+                combined_data[like.post] = 'like'
 
+        post_form = PostForm()
         context = {
             'user': user,
-            'posts': posts,
-            'likes': likes,
-            'post_comments_count': post_comments_count,
+            'combined_data': combined_data,
+            'post_form': post_form,
         }
         return render(request, "post/home.html", context)
 
-### Create a New Post
-@login_required(login_url='login')
-def create_post(request):
-    post_form = PostForm()
-
+    # Create a New Post
     if request.method == "POST":
         post_form = PostForm(request.POST)
         if post_form.is_valid():
@@ -163,11 +158,7 @@ def create_post(request):
                 body= post_form.cleaned_data["body"],
             )
             post.save()
-            return redirect('post_home')
-    context = {
-        "post_form": post_form,
-    }
-    return render(request, "post/post_create.html", context)
+            return redirect('/')
 
 ### Like of Post
 @login_required(login_url='login')
@@ -184,77 +175,91 @@ def like_post(request, pk_post):
         PostLikes.objects.create(user=request.user, post=post)
         post.post_likes_count += 1
     post.save()
-    return redirect(reverse('post_home'))
+    return redirect('/')
+
+### Num of Likes For Post
+@login_required(login_url='login')
+def all_likes_post(request, pk_post):
+    post = Post.objects.get(id=pk_post)
+    post_likes = PostLikes.objects.filter(post=pk_post)
+    context = {
+        'post': post,
+        'post_likes': post_likes,
+        }
+    return render(request, 'post/post_likes.html', context)
 
 ### Update Post
 @login_required(login_url='login')
 def update_post(request, pk_post):
-    post = Post.objects.get(pk=pk_post)
+    if request.method == "GET":
+        post = Post.objects.get(pk=pk_post)
+        update_form = UpdateForm(instance=post)
+        context = {
+            'post': post,
+            "update_form": update_form,
+            }
+        return render(request, 'post/update_post.html', context)
     
-    update_form = UpdateForm(instance=post)
     if request.method == "POST":
         update_form = UpdateForm(request.POST, instance=post)
         if update_form.is_valid():
             update_form.save()
-            return redirect(reverse('post_home'))
-    context = {
-        'post': post,
-        "update_form": update_form,
-    }
-    return render(request, 'post/update_post.html', context)
+            return redirect('/')
+    
 
 ### Delete Post
 @login_required(login_url='login')
 def delete_post(request, pk_post):
     post = Post.objects.filter(pk=pk_post)
 
-    if request.method == 'POST' and post:
-        post.delete()
-        return redirect(reverse('post_home'))
-
     if request.method == 'GET' and post:
         return render(request, 'post/delete_post.html')
     
     if request.method == 'GET' and not post:
-        return redirect(reverse('post_home'))
+        return redirect('/')
+    
+    if request.method == 'POST' and post:
+        post.delete()
+        return redirect('/')
 
 ####################################################################################################
 
 ### Detail Of Post & Add Comment
 @login_required(login_url='login')
 def post_detail(request, pk_post):
-    user = request.user
-    post = Post.objects.get(pk=pk_post)
-    comment_form = CommentForm()
+    if request.method == "GET":
+        user = request.user
+        post = Post.objects.get(pk=pk_post)
+        comments = Comment.objects.filter(post=post).order_by("-created_on")
+        likes = CommentLikes.objects.filter(user=user)
 
+        # Check User is Like
+        combined_data = {}                      # Assuming posts and likes are lists or querysets
+        for comment in comments:                # Initialize combined_data with 'unlike' for all posts
+            combined_data[comment] = 'unlike'
+        for like in likes:                      # Update combined_data based on likes
+            if like.comment in combined_data:
+                combined_data[like.comment] = 'like'
+
+        comment_form = CommentForm()
+        context = {
+            'user': user,
+            "post": post,
+            "combined_data": combined_data,
+            "comment_form": comment_form,
+        }
+        return render(request, "post/detail_post.html", context)
+    
     if request.method == "POST":
         comment_form = CommentForm(request.POST)
         if comment_form.is_valid():
             comment = Comment(
                 body= comment_form.cleaned_data["body"],
-                post= post,
+                post= Post.objects.get(pk=pk_post),
                 user= request.user,
             )
             comment.save()
-            return redirect('post_detail', pk_post=pk_post)
-    comments = Comment.objects.filter(post=post).order_by("-created_on")
-    counts = Comment.objects.filter(post=post).count()
-
-    # Calculate the count of replaies for each comment
-    comment_replaies_count = {}
-    for comment in comments:
-        count = Replay.objects.filter(comment_id=comment.id).count()
-        comment_replaies_count[comment.id] = count
-
-    context = {
-        'user': user,
-        "post": post,
-        "comments": comments,
-        "counts": counts,
-        'comment_replaies_count': comment_replaies_count,
-        "comment_form": comment_form,
-    }
-    return render(request, "post/detail_post.html", context)
+            return redirect(reverse('post_detail', kwargs={'pk_post': pk_post}))
 
 ### Like of Comment
 @login_required(login_url='login')
@@ -277,43 +282,66 @@ def like_comment(request, pk_post, pk_comment):
 ### Update Comment
 @login_required(login_url='login')
 def update_comment(request, pk_post, pk_comment):
-    comment = Comment.objects.get(pk=pk_comment)
-    
-    update_form = UpdateForm(instance=comment)
+    if request.method == "GET":
+        comment = Comment.objects.get(pk=pk_comment)
+        update_form = UpdateForm(instance=comment)
+        context = {
+            'comment': comment,
+            "update_form": update_form,
+        }
+        return render(request, 'post/update_comment.html', context)
+
     if request.method == "POST":
         update_form = UpdateForm(request.POST, instance=comment)
         if update_form.is_valid():
             update_form.save()
-            return redirect(reverse('post_detail', kwargs={'pk_post': pk_post}))
-    context = {
-        'comment': comment,
-        "update_form": update_form,
-    }
-    return render(request, 'post/update_comment.html', context)
+        return redirect(reverse('post_detail', kwargs={'pk_post': pk_post}))
+    
 
 ### Delete Comment
 @login_required(login_url='login')
 def delete_comment(request, pk_post, pk_comment):
     comment = Comment.objects.filter(pk=pk_comment)
-
-    if request.method == 'POST' and comment:
-        comment.delete()
-        return redirect(reverse('post_detail', kwargs={'pk_post': pk_post}))
     
     if request.method == 'GET' and comment:
         return  render(request, 'post/delete_comment.html')
 
     if request.method == 'GET' and not comment:
         return redirect(reverse('post_home', kwargs={}))
+    
+    if request.method == 'POST' and comment:
+        comment.delete()
+        return redirect(reverse('post_detail', kwargs={'pk_post': pk_post}))
+
 ####################################################################################################
 
 ### Detail Of Comment & Add Replay
 @login_required(login_url='login')
 def comment_detail(request, pk_post, pk_comment):
-    user = request.user
-    post = Post.objects.get(pk=pk_post)
-    comment = Comment.objects.get(pk=pk_comment)
-    replay_form = ReplayForm()
+    if request.method == "GET":
+        user = request.user
+        post = Post.objects.get(pk=pk_post)
+        comment = Comment.objects.get(pk=pk_comment)
+        replies = Replay.objects.filter(comment=comment).order_by("-created_on")
+        likes = ReplayLikes.objects.filter(user=user)
+
+        # Check User is Like
+        combined_data = {}                          # Assuming posts and likes are lists or querysets
+        for replay in replies:                      # Initialize combined_data with 'unlike' for all posts
+            combined_data[replay] = 'unlike'
+        for like in likes:                          # Update combined_data based on likes
+            if like.replay in combined_data:
+                combined_data[like.replay] = 'like'
+
+        replay_form = ReplayForm()
+        context = {
+            'user': user,
+            'post': post,
+            "comment": comment,
+            "combined_data": combined_data,
+            "replay_form": replay_form,
+        }
+        return render(request, "post/detail_comment.html", context)
 
     if request.method == "POST":
         replay_form = ReplayForm(request.POST)
@@ -325,19 +353,7 @@ def comment_detail(request, pk_post, pk_comment):
                 user= request.user,
             )
             replay.save()
-            return HttpResponseRedirect(request.path_info)
-    replies = Replay.objects.filter(comment=comment).order_by("-created_on")
-    counts = Replay.objects.filter(comment=comment).count()
-
-    context = {
-        'user': user,
-        'post': post,
-        "comment": comment,
-        "replies": replies,
-        "counts": counts,
-        "replay_form": replay_form,
-    }
-    return render(request, "post/detail_comment.html", context)
+            return redirect(reverse('comment_detail', kwargs={'pk_post': pk_post, 'pk_comment': pk_comment}))
 
 ### Like of Replay
 @login_required(login_url='login')
@@ -360,58 +376,59 @@ def like_replay(request, pk_post, pk_comment, pk_replay):
 ### Update Replay
 @login_required(login_url='login')
 def update_replay(request, pk_post, pk_comment, pk_replay):
-    replay = Replay.objects.get(pk=pk_replay)
-    
-    update_form = UpdateForm(instance=replay)
+    if request.method == "GET":
+        replay = Replay.objects.get(pk=pk_replay)
+        update_form = UpdateForm(instance=replay)
+        context = {
+            'replay': replay,
+            "update_form": update_form,
+        }
+        return render(request, 'post/update_replay.html', context)
+
     if request.method == "POST":
         update_form = UpdateForm(request.POST, instance=replay)
         if update_form.is_valid():
             update_form.save()
             return redirect(reverse('comment_detail', kwargs={'pk_post': pk_post, 'pk_comment': pk_comment}))
-    context = {
-        'replay': replay,
-        "update_form": update_form,
-    }
-    return render(request, 'post/update_replay.html', context)
+    
 
 ### Delete Replay
 @login_required(login_url='login')
 def delete_replay(request, pk_post, pk_comment, pk_replay):
     replay = Replay.objects.filter(pk=pk_replay)
 
-    if request.method == 'POST' and replay:
-        replay.delete()
-        return redirect(reverse('comment_detail', kwargs={'pk_post': pk_post, 'pk_comment': pk_comment}))
     if request.method == 'GET' and replay:
         return  render(request, 'post/delete_replay.html')
 
     if request.method == 'GET' and not replay:
         return redirect(reverse('post_detail', kwargs={'pk_post': pk_post}))
+    
+    if request.method == 'POST' and replay:
+        replay.delete()
+        return redirect(reverse('comment_detail', kwargs={'pk_post': pk_post, 'pk_comment': pk_comment}))
 
 ####################################################################################################
 ####################################################################################################
 # All Questions
 @login_required(login_url='login')
 def question_home(request):
-    questions = Question.objects.all().order_by("-created_on")
+    if request.method == 'GET':
+        questions = Question.objects.all().order_by("-created_on")
+        context = {
+            "questions": questions,
+            }
+        return render(request, "question/question.html", context)
+
+# Ask New Question
+@login_required(login_url='login')
+def ask_question(request):
+    if request.method == "GET":
+        question_form = QuestionForm()
+        context = {
+            "question_form": question_form,
+            }
+        return render(request, "question/ask_question.html", context)
     
-    # Calculate the count of answers for each question
-    question_answers_count = {}
-    for question in questions:
-        count = Answer.objects.filter(question_id=question.id).count()
-        question_answers_count[question.id] = count
-
-    context = {
-        "questions": questions,
-        'question_answers_count': question_answers_count,
-    }
-    return render(request, "question/question.html", context)
-
-# Ask New Question
-@login_required(login_url='login')
-def ask_question(request):
-    question_form = QuestionForm()
-
     if request.method == "POST":
         question_form = QuestionForm(request.POST)
         if question_form.is_valid():
@@ -421,67 +438,45 @@ def ask_question(request):
                 body= question_form.cleaned_data["body"],
             )
             question.save()
-            return redirect(reverse('question_home'))
-    context = {
-        "question_form": question_form,
-    }
-    return render(request, "question/ask_question.html", context)
-
-# Ask New Question
-@login_required(login_url='login')
-def ask_question(request):
-    question_form = QuestionForm()
-
-    if request.method == "POST":
-        question_form = QuestionForm(request.POST)
-        if question_form.is_valid():
-            question = Question(
-                user= request.user,
-                title= question_form.cleaned_data["title"],
-                body= question_form.cleaned_data["body"],
-            )
-            question.save()
-            return redirect(reverse('question_home'))
-    context = {
-        "question_form": question_form,
-    }
-    return render(request, "question/ask_question.html", context)
+            return redirect(reverse('question_home', kwargs={}))
 
 # All Questions Same Status
 @login_required(login_url='login')
 def status_question(request, status):
-    questions = Question.objects.filter(status=status).order_by("-created_on")
-
-    # Calculate the count of answers for each question
-    question_answers_count = {}
-    for question in questions:
-        count = Answer.objects.filter(question_id=question.id).count()
-        question_answers_count[question.id] = count
-
-    context = {
-        "questions": questions,
-        'question_answers_count': question_answers_count,
-    }
-    return render(request, "question/status.html", context)
+    if request.method == "GET":
+        questions = Question.objects.filter(status=status).order_by("-created_on")
+        context = {
+            "questions": questions,
+            }
+        return render(request, "question/status.html", context)
 
 # All Detail of One Question
 # Add New Answer & Vote Question & Display All Answers
 @login_required(login_url='login')
 def detail_question(request, pk_question):
+    user = request.user
     question = Question.objects.get(pk=pk_question)
-    answers = Answer.objects.filter(question=question).order_by("-created_on")
-    counts = Answer.objects.filter(question=question).count()
 
     if request.method == "GET":
-        # Answer Form
-        answer_form = AnswerForm()
+        question_vote = QuestionVotes.objects.filter(user=user, question=question)
+        answers = Answer.objects.filter(question=question).order_by("-created_on")
+        answer_votes = AnswerVotes.objects.filter(user=user)
 
+        # Check User is Vote
+        combined_data = {}                          # Assuming posts and likes are lists or querysets
+        for answer in answers:                      # Initialize combined_data with 'unvote' for all answers
+            combined_data[answer] = 'unvote'
+        for vote in answer_votes:                   # Update combined_data based on likes
+            if vote.answer in combined_data:
+                combined_data[vote.answer] = 'vote'
+
+        answer_form = AnswerForm()
         context = {
-        'question': question,
-        'answers': answers,
-        'counts': counts,
-        'answer_form': answer_form,
-        }
+            'question': question,
+            'question_vote': question_vote,
+            'combined_data': combined_data,
+            'answer_form': answer_form,
+            }
         return render(request, "question/detail_question.html", context)
 
     # Add New Answer
@@ -494,7 +489,7 @@ def detail_question(request, pk_question):
                 user= request.user,
             )
             answer.save()
-            return HttpResponseRedirect(request.path_info)
+            return redirect(reverse('detail_question', kwargs={'pk_question': pk_question}))
 
     # Vote Question
     if request.method == "POST":
@@ -508,7 +503,7 @@ def detail_question(request, pk_question):
             QuestionVotes.objects.create(user=request.user, question=question)
             question.question_votes_count += 1
         question.save()
-        return HttpResponseRedirect(request.path_info)
+        return redirect(reverse('detail_question', kwargs={'pk_question': pk_question}))
 
 ### Update Question
 @login_required(login_url='login')
@@ -562,7 +557,6 @@ def delete_answer(request, pk_question, pk_answer):
 # Vote Answer
 @login_required(login_url='login')
 def vote_answer(request, pk_question, pk_answer):
-    question = Question.objects.get(pk=pk_question)
     answer = Answer.objects.get(pk=pk_answer)
     
     # Check if the user has already voted 
@@ -583,40 +577,37 @@ def vote_answer(request, pk_question, pk_answer):
 @login_required(login_url='login')
 def disease_home(request):
     diseases = Disease.objects.all().order_by("-created_on")
-
     context = {
         "diseases": diseases,
-    }
+        }
     return render(request, "disease/disease.html", context)
 
 # All Diseases Same Category
 @login_required(login_url='login')
 def category_disease(request, category):
     diseases = Disease.objects.filter(category=category).order_by("-created_on")
-
     context = {
         "diseases": diseases,
-    }
+        }
     return render(request, "disease/category.html", context)
 
 # Add New Disease
 @login_required(login_url='login')
 def add_disease(request):
-    disease_form = DiseaseForm()
-
+    if request.method == "GET":
+        disease_form = DiseaseForm()
+        context = {
+            "disease_form": disease_form,
+            }
+        return render(request, "disease/add_disease.html", context)
+    
     if request.method == "POST":
         disease_form = DiseaseForm(request.POST, request.FILES)
         if disease_form.is_valid():
             disease = disease_form.save(commit=False)
             disease.user = request.user
             disease.save()
-            return redirect(reverse('disease_home'))
-        else:
-            messages.error(request, 'Please correct the error below.')
-    context = {
-        "disease_form": disease_form,
-    }
-    return render(request, "disease/add_disease.html", context)
+            return redirect(reverse('disease_home', kwargs={}))
 
 # All Detail of One Disease
 # Add New Answer & Vote Question & Display All Therapy
@@ -624,18 +615,14 @@ def add_disease(request):
 def detail_disease(request, pk_disease):
     disease = Disease.objects.get(pk=pk_disease)
     therapies = Therapy.objects.filter(disease=disease).order_by("-created_on")
-    counts = Therapy.objects.filter(disease=disease).count()
 
     if request.method == "GET":
-        # Answer Form
         therapy_form = TherapyForm()
-
         context = {
-        'disease': disease,
-        'therapies': therapies,
-        'counts': counts,
-        'therapy_form': therapy_form,
-        }
+            'disease': disease,
+            'therapies': therapies,
+            'therapy_form': therapy_form,
+            }
         return render(request, "disease/detail_disease.html", context)
 
     # Add New Therapy
@@ -646,7 +633,7 @@ def detail_disease(request, pk_disease):
             therapy.disease = disease
             therapy.user = request.user
             therapy.save()
-            return HttpResponseRedirect(request.path_info)
+            return redirect(reverse('detail_disease', kwargs={'pk_disease': pk_disease}))
 
 ### Delete Question
 @login_required(login_url='login')
@@ -699,7 +686,18 @@ def detail_therapy(request, pk_disease, pk_therapy):
     user = request.user
     disease = Disease.objects.get(pk=pk_disease)
     therapy = Therapy.objects.get(pk=pk_therapy)
-    replay_form = ReplayForm()
+    
+    if request.method == "GET":
+        replies = ReplayTherapy.objects.filter(therapy=therapy).order_by("-created_on")
+        replay_form = ReplayForm()
+        context = {
+            'user': user,
+            'disease': disease,
+            "therapy": therapy,
+            "replies": replies,
+            "replay_form": replay_form,
+            }
+        return render(request, "disease/detail_therapy.html", context)
 
     if request.method == "POST":
         replay_form = ReplayForm(request.POST)
@@ -711,19 +709,8 @@ def detail_therapy(request, pk_disease, pk_therapy):
                 user= user,
             )
             replay.save()
-            return HttpResponseRedirect(request.path_info)
-    replies = ReplayTherapy.objects.filter(therapy=therapy).order_by("-created_on")
-    counts = ReplayTherapy.objects.filter(therapy=therapy).count()
-
-    context = {
-        'user': user,
-        'disease': disease,
-        "therapy": therapy,
-        "replies": replies,
-        "counts": counts,
-        "replay_form": replay_form,
-    }
-    return render(request, "disease/detail_therapy.html", context)
+            return redirect(reverse('detail_therapy', kwargs={'pk_disease': pk_disease, 'pk_therapy': pk_therapy}))
+    
 
 ####################################################################################################
 ####################################################################################################

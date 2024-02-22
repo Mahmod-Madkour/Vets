@@ -12,11 +12,11 @@
                     <div class="p-2 px-3">
                         {% if user == post.user %}
                             <a style="text-decoration: none" href="{% url 'user_profile' %}">
-                                <span class="font-weight-bold"> {{ post.user }} </span><br>
+                                <span class="font-weight-bold"> {{ post.user.first_name }} {{ post.user.last_name }} </span><br>
                             </a>
                         {% else %}
                             <a style="text-decoration: none" href="{% url 'user_profile_everyone' post.user.id %}">
-                                <span class="font-weight-bold"> {{ post.user }} </span><br>
+                                <span class="font-weight-bold"> {{ post.user.first_name }} {{ post.user.last_name }} </span><br>
                             </a>
                         {% endif %}
                         <small > {{ post.created_on.date }} </small>
@@ -41,8 +41,8 @@
                         <hr>
 
                         <!-- Display All Comments -->
-                        <p>Comments : {{ counts }} </p>
-                        {% for comment in comments %}
+                        <p>Comments : {{ post.comment_set.count }} </p>
+                        {% for comment, like in combined_data.items %}
                             <div class="card">
 
                                 <!-- User Info For Comment -->
@@ -50,11 +50,11 @@
                                     <div class="col-10">
                                         {% if user == comment.user %}
                                             <a style="text-decoration: none" href="{% url 'user_profile' %}">
-                                                <span class="font-weight-bold"> {{ comment.user }} </span><br>
+                                                <span class="font-weight-bold"> {{ comment.user.first_name }} {{ comment.user.last_name }} </span><br>
                                             </a>
                                         {% else %}
                                             <a style="text-decoration: none" href="{% url 'user_profile_everyone' comment.user.id %}">
-                                                <span class="font-weight-bold"> {{ comment.user }} </span><br>
+                                                <span class="font-weight-bold"> {{ comment.user.first_name }} {{ comment.user.last_name }} </span><br>
                                             </a>
                                         {% endif %}
                                         <small > {{ comment.created_on.date }} </small>
@@ -85,35 +85,29 @@
                                         <!-- Like Of Comment -->
                                         <form action="{% url 'like_comment' post.id comment.id %}" method="post">
                                             {% csrf_token %}
-                                            <button type="submit" class="btn
-                                                {% if user in comment.like_set.all %}
-                                                    btn-success
-                                                {% else %}
-                                                    btn-outline-success
-                                                {% endif %}">
-
-                                                {% if user in comment.like_set.all %}Unlike
-                                                {% else %}Like
-                                                {% endif %}
-                                            </button>
+                                            {% if like == 'like' %}
+                                                <button type="submit" style="border: none; background: none;">
+                                                    <i style="color: blue; font-size:22px;" class="fas fa-thumbs-up"></i>
+                                                </button>
+                                            {% elif like == 'unlike' %}
+                                                <button type="submit" style="border: none; background: none;">
+                                                    <i style="color: black; font-size:22px;" class="fas fa-thumbs-up"></i>
+                                                </button>
+                                            {% endif %}
                                         </form>
 
+                                        <!-- Link and Replay -->
                                         <div>
-                                            <!-- Number Of Comment Likes -->
-                                            <p> {{ comment.comment_likes_count }} Likes . 
-                                            <span>
-                                                <!-- Link To Show All Comments For Post Selected -->
-                                                <a style="text-decoration: none" href="{% url 'comment_detail' post.id comment.id %}">
-                                                    <!-- Numbers of Comments -->
-                                                    {% for key, value in comment_replaies_count.items %}
-                                                    {% if key == comment.id %}
-                                                        <small> {{ value }} Replies</small><br>
-                                                    {% endif %}
-                                                    {% endfor %}
-                                                </a>
-                                            </span>
-                                            </p>
+                                            <!-- Link To Show All Likes For Comment Selected -->
+                                            <small style="color:blue;"> {{ comment.comment_likes_count }} Likes</small>
+                                            <span> . </span>
+
+                                            <!-- Link To Show All Comments For Comment Selected -->
+                                            <a style="text-decoration: none; color:blue;" href="{% url 'comment_detail' post.id comment.id %}">
+                                                <small> {{ comment.replay_set.count }} Replies</small>
+                                            </a>
                                         </div>
+
                                     </div>
                                     <br>
                                 </div>

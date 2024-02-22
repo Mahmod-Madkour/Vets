@@ -35,11 +35,7 @@
                                 <small> {{ question.question_votes_count }} votes</small><br>
 
                                 <!-- Numbers of Question Answers -->
-                                {% for key, value in question_answers_count.items %}
-                                    {% if key == question.id %}
-                                        <small> {{ value }} answers</small><br>
-                                    {% endif %}
-                                {% endfor %}
+                                <small> {{ question.answer_set.count }} answers</small><br>
 
                                 <!-- Status of Question -->
                                 <small>

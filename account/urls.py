@@ -37,15 +37,15 @@ urlpatterns = [
     path('password_reset_complete/', PasswordResetCompleteView.as_view(template_name='auth/password_reset_complete.html'), name='password_reset_complete'),
 
     ####################################################################################################
-    
-    # Create a New Post
-    path("new_post/", views.create_post, name="create_post"),
 
     # All Posts
     path('posts/', views.post_home, name='post_home'),
     
     # Like Post
     path("posts/<pk_post>/", views.like_post, name="like_post"),
+
+    # All Likes Post
+    path("likes/<pk_post>/", views.all_likes_post, name="all_likes_post"),
 
     # All Comment
     path("post_detail/<pk_post>/", views.post_detail, name="post_detail"),

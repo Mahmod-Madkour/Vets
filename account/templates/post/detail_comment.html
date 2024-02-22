@@ -13,12 +13,12 @@
                     <div class="d-flex flex-column p-2 px-3">
                         {% if user == post.user %}
                             <a style="text-decoration: none" href="{% url 'user_profile' %}">
-                                <span class="font-weight-bold"> {{ post.user }} </span>
+                                <span class="font-weight-bold"> {{ post.user.first_name }} {{ post.user.last_name }} </span><br>
                             </a>
                             <small >{{ post.created_on.date }}</small>
                         {% else %}
                             <a style="text-decoration: none" href="{% url 'user_profile_everyone' post.user.id %}">
-                                <span class="font-weight-bold"> {{ post.user }} </span>
+                                <span class="font-weight-bold"> {{ post.user.first_name }} {{ post.user.last_name }} </span><br>
                             </a>
                             <small >{{ post.created_on.date }}</small>
                         {% endif %}
@@ -32,8 +32,17 @@
                         <div class="card">
                             <!-- User Info For Comment -->
                             <div class="d-flex flex-column p-2 px-3">
-                                <span class="font-weight-bold"> {{ comment.user.username }} {{ user.lname }} </span>
-                                <small > {{ comment.created_on.date }} </small>
+                                {% if user == comment.user %}
+                                    <a style="text-decoration: none" href="{% url 'user_profile' %}">
+                                        <span class="font-weight-bold"> {{ comment.user.first_name }} {{ comment.user.last_name }} </span><br>
+                                    </a>
+                                    <small >{{ comment.created_on.date }}</small>
+                                {% else %}
+                                    <a style="text-decoration: none" href="{% url 'user_profile_everyone' comment.user.id %}">
+                                        <span class="font-weight-bold"> {{ comment.user.first_name }} {{ comment.user.last_name }} </span><br>
+                                    </a>
+                                    <small >{{ comment.created_on.date }}</small>
+                                {% endif %}
                             </div>
                             <div class="px-3">
                                 <!-- Comment Body -->
@@ -59,17 +68,27 @@
 
                             <!-- Dispaly All Replies -->
                             <div class="row">
-                                <div class="col-2"></div>
+                                <div class="col-2">
+                                </div>
                                 <div class="col-9 p-2">
-                                    <p>Replies : {{ counts }}</p>
-                                    {% for replay in replies %}
+                                    <p>Replies : {{ comment.replay_set.count }}</p>
+                                    {% for replay, like in combined_data.items %}
                                         <div class="card ">
                                             <div class="row">
                                                 <!-- User Info For Replay -->
                                                 <div class="col-9">
                                                     <div class="d-flex flex-column p-2 px-3">
-                                                        <span class="font-weight-bold"> {{ replay.user.username }} {{ user.lname }} </span>
-                                                        <small >{{ replay.created_on.date }}</small>
+                                                        {% if user == replay.user %}
+                                                            <a style="text-decoration: none" href="{% url 'user_profile' %}">
+                                                                <span class="font-weight-bold"> {{ replay.user.first_name }} {{ replay.user.last_name }} </span><br>
+                                                            </a>
+                                                            <small >{{ replay.created_on.date }}</small>
+                                                        {% else %}
+                                                            <a style="text-decoration: none" href="{% url 'user_profile_everyone' replay.user.id %}">
+                                                                <span class="font-weight-bold"> {{ replay.user.first_name }} {{ replay.user.last_name }} </span><br>
+                                                            </a>
+                                                            <small >{{ replay.created_on.date }}</small>
+                                                        {% endif %}
                                                     </div>
                                                 </div>
 
@@ -101,22 +120,20 @@
                                                     <!-- Like Of Replay -->
                                                     <form action="{% url 'like_replay' post.id comment.id replay.id %}" method="post">
                                                         {% csrf_token %}
-                                                        <button type="submit" class="btn
-                                                            {% if user in replay.like_set.all %}
-                                                                btn-success
-                                                            {% else %}
-                                                                btn-outline-success
-                                                            {% endif %}">
-
-                                                            {% if user in replay.like_set.all %}Unlike
-                                                            {% else %}Like
-                                                            {% endif %}
-                                                        </button>
+                                                        {% if like == 'like' %}
+                                                            <button type="submit" style="border: none; background: none;">
+                                                                <i style="color: blue; font-size:22px;" class="fas fa-thumbs-up"></i>
+                                                            </button>
+                                                        {% elif like == 'unlike' %}
+                                                            <button type="submit" style="border: none; background: none;">
+                                                                <i style="color: black; font-size:22px;" class="fas fa-thumbs-up"></i>
+                                                            </button>
+                                                        {% endif %}
                                                     </form>
 
                                                     <div>
                                                         <!-- Number Of Replay Likes -->
-                                                        <p> {{ replay.replay_likes_count }} Likes </p>
+                                                        <p style="text-decoration: none; color:blue;"> {{ replay.replay_likes_count }} Likes </p>
                                                     </div>
                                                 </div>
                                             </div>
